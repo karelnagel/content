@@ -1,75 +1,53 @@
 #!/usr/bin/env node
 import 'dotenv/config'
-import { createScript } from './openai/index.js'
-import { getThreadIds, getThreads } from './twitter/index.js'
-import { start } from './render.js'
-import { writeJson } from './file/index.js'
-import { scriptToSpeech } from './google/index.js'
-import config from './conf.js'
-import { postTweet, postVideo } from './twitter/post.js'
+import { post } from './ayrshare/index.js'
+import { readJson, writeJson } from './file/index.js'
+import { RedditToSpeech } from './google/index.js'
+import { Script } from './interfaces/index.js'
+import reddit from './reddit/index.js'
+import render from './remotion/render.js'
 
+export const getFolder = () => process.argv[3]
+export const getProgram = () => process.argv[2] || "all" as "all" | "reddit" | "tts" | "remotion" | "youtube"
+
+const subreddit = "AskReddit"
 export default async function main() {
-  const folder = new Date().toISOString()
-  const folderPath = `${config.folderPath}/${folder}`
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - config.lastDays)
-  console.log(`Starting with ${folder}`)
+  const folder = getFolder() || new Date().toISOString()
+  const program = getProgram()
 
-  // Getting thread ids
-  const threadIds = await getThreadIds(config.searchTerm, config.threadsCount, yesterday.toISOString())
-  if (!threadIds || threadIds.length === 0) {
-    console.log('Error with getting thread ids')
+  if (program !== "all" && program !== "reddit" && program !== "tts" && program !== "remotion" && program !== "youtube") {
+    console.error("Invalid program")
     return
   }
-  console.log(`Got these thread ids: ${threadIds}`)
 
-  // Getting threads
-  const threads = await getThreads(threadIds)
-  if (!threads || threads.length === 0) {
-    console.log('Error with getting threads')
-    return
-  }
-  console.log(`Got the tweets for ${threads.length} threads`)
+  console.log(`Starting ${program} with folder: ${folder}`)
 
-  // Creating script
-  const { script, title } = await createScript(threads)
-  console.log('Script ready')
-
-  // Writing script to file
-  const scriptPath = await writeJson({ folder, script, title }, folderPath)
-  console.log(`Script written to ${scriptPath}`)
-
-  // Getting audio files
-  await scriptToSpeech(script, folderPath)
-
-  // Creating video with remotion
-  console.log('Starting rendering...')
-  const videoPath = await start(folder, folderPath)
-  if (!videoPath) {
-    console.log('Error with rendering')
-    return
-  }
-  console.log(`Video created: ${videoPath}`)
-
-  // Posting video to twitter
-  console.log('Posting...')
-  const tweetId = await postVideo(title.replace('\n', ''), videoPath)
-  if (!tweetId) {
-    console.log('Error with posting')
-    return
-  }
-  console.log(`Video posted: https://twitter.com/ethnews/status/${tweetId}`)
-
-  console.log('Adding replies...')
-  let lastTweet = tweetId
-  for await (const id of threadIds) {
-    const newTweet = await postTweet({ status: `https://twitter.com/ethnews/status/${id}`, replyTo: lastTweet })
-    if (!newTweet) {
-      console.log('Error with adding reply')
-      continue
+  if (program === "all" || program === "reddit") {
+    const thread = await reddit(subreddit, 2, 10, "top")
+    const script: Script = {
+      folder,
+      title: thread.title || `r/${thread.subreddit}`,
+      scenes: [{ type: "intro" }, { type: "reddit", reddit: thread }, { type: "outro" }]
     }
-    lastTweet = newTweet
+    await writeJson(script, `videos/${folder}`, "script.json")
   }
+
+  if (program === "all" || program === "tts") {
+    const script = await readJson(folder)
+    const post = script.scenes[1].reddit
+    if (post) await RedditToSpeech(post, folder)
+  }
+
+  if (program === "all" || program === "remotion") {
+    await render(folder)
+  }
+
+  if (program === "all" || program === "youtube") {
+    const result = await post(folder, "This is description", "This is title", ["youtube", "linkedin"])
+    if (!result) return console.error("Failed to upload to youtube")
+    else console.log(result)
+  }
+
   console.log('Success')
 }
 main()

@@ -1,10 +1,11 @@
 import { exec } from 'child_process'
-import config from './conf.js'
+import config from '../conf.js'
 
-export const start = async (folder: string, folderPath: string): Promise<string | null> => {
-  const filePath = `${folderPath}/video.mp4`
+const render = async (folder: string): Promise<string | null> => {
+  const filePath = `./videos/${folder}/video.mp4`
+  console.log("Remotion started!")
 
-  return new Promise(resolve => {
+  const idk: string | null = await new Promise(resolve => {
     exec(
       `npx remotion render src/remotion/index.tsx ${config.composition} ${filePath}  --props=./videos/${folder}/script.json`,
       async function (err) {
@@ -17,4 +18,8 @@ export const start = async (folder: string, folderPath: string): Promise<string 
       },
     )
   })
+  console.log("Remotion finished!")
+  return idk
 }
+
+export default render

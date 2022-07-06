@@ -4,34 +4,62 @@ import { Video } from './Video'
 import { getAudioDurationInSeconds } from '@remotion/media-utils'
 import './style.css'
 import { Intro } from './screens/Intro'
-import { Thread } from './screens/Thread'
-import { ScriptJson, Tweet } from 'src/interfaces'
-import { LogoScreen } from './screens/LogoScreen'
+import { Post, Scene, Script } from 'src/interfaces'
+import { Outro } from './screens/Outro'
+import { Reddit } from './screens/Reddit'
 
 export const fps = 30
-export const logoDuration = fps * 4
-const { script, folder } = getInputProps() as ScriptJson
+export const logoDuration = fps * 2
+const { scenes, folder } = getInputProps() as Script
+
+const getLength = async (scenes: Scene[], folder: string) => {
+  const durations = []
+  let length = 0
+  for (const scene of scenes) {
+    let duration = 0
+    if (scene.type === 'intro') {
+      duration = logoDuration
+    }
+    if (scene.type === 'reddit' && scene.reddit) {
+      duration = Math.floor((await getRedditLength(scene.reddit, folder)) * fps)
+    }
+    if (scene.type === 'outro') {
+      duration = logoDuration
+    }
+    length += duration
+    durations.push(duration)
+  }
+  return { length, durations }
+}
+export const getRedditLength = async (post: Post, folder: string, recursive = true): Promise<number> => {
+  let length = 0
+  if (post.title) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const audio = require(`./../../videos/${folder}/${post.id}_title.mp3`)
+    length += await getAudioDurationInSeconds(audio)
+  }
+  if (post.body) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const audio = require(`./../../videos/${folder}/${post.id}_body.mp3`)
+    length += await getAudioDurationInSeconds(audio)
+  }
+  if (post.replies && recursive)
+    for (const reply of post.replies) {
+      length += await getRedditLength(reply, folder)
+    }
+  return length
+}
 
 export const Root: React.FC = () => {
   const [handle] = useState(() => delayRender())
-  const [durations, setDurations] = useState<number[]>([])
   const [totalDutration, setTotalDuration] = useState(1)
-  const [audioFiles, setAudioFiles] = useState<string[]>([])
+  const [durations, setDurations] = useState<number[]>([])
 
   useEffect(() => {
     const effect = async () => {
-      const durs: number[] = []
-      const audios: string[] = []
-      for await (const s of script) {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const audio = require(`./../../videos/${folder}/${s.position}.mp3`)
-        audios.push(audio)
-        const dur = await getAudioDurationInSeconds(audio)
-        durs.push(Number(((dur + 1) * fps).toFixed(0)))
-      }
-      setAudioFiles(audios)
-      setDurations(durs)
-      setTotalDuration(durs.reduce((a, b) => a + b, 0) + logoDuration)
+      const { length, durations } = await getLength(scenes, folder)
+      setDurations(durations)
+      setTotalDuration(length)
       continueRender(handle)
     }
     effect()
@@ -46,56 +74,38 @@ export const Root: React.FC = () => {
         width={1920}
         height={1080}
         defaultProps={{
-          duration: durations,
-          script: script,
-          audioFiles: audioFiles,
+          scenes,
+          durations,
         }}
       />
       <Composition
         id={`Intro`}
         component={Intro}
-        durationInFrames={4 * fps}
-        fps={fps}
-        width={1920}
-        height={1080}
-        defaultProps={{
-          audio: audioFiles[0],
-        }}
-      />
-      <Composition
-        id={`Thread1`}
-        component={Thread}
-        durationInFrames={4 * fps}
-        fps={fps}
-        width={1920}
-        height={1080}
-        defaultProps={{
-          thread: script[1].content.thread as Tweet[],
-          audio: audioFiles[1],
-        }}
-      />
-
-      {script && (
-        <Composition
-          id={`Thread2`}
-          component={Thread}
-          durationInFrames={15 * fps}
-          fps={fps}
-          width={1920}
-          height={1080}
-          defaultProps={{
-            thread: script[2].content.thread as Tweet[],
-            audio: audioFiles[2],
-          }}
-        />
-      )}
-      <Composition
-        id={`Logo`}
-        component={LogoScreen}
         durationInFrames={logoDuration}
         fps={fps}
         width={1920}
         height={1080}
+        defaultProps={{}}
+      />
+      <Composition
+        id={`Outro`}
+        component={Outro}
+        durationInFrames={logoDuration}
+        fps={fps}
+        width={1920}
+        height={1080}
+        defaultProps={{}}
+      />
+      <Composition
+        id={`Reddit`}
+        component={Reddit}
+        durationInFrames={4 * fps}
+        fps={fps}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          post: scenes[2].reddit!,
+        }}
       />
     </>
   )

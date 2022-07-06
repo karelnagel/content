@@ -1,14 +1,18 @@
 import textToSpeech from '@google-cloud/text-to-speech'
 import fs from 'fs'
-import { Script } from 'src/interfaces'
+import { Post } from 'src/interfaces'
 import util from 'util'
 import config from './../conf.js'
 
 const client = new textToSpeech.TextToSpeechClient()
 
-export async function scriptToSpeech(script: Script[], folderPath: string) {
-  for await (const scriptElement of script) {
-    await toSpeech(scriptElement.text, `${folderPath}/${scriptElement.position}.mp3`)
+export async function RedditToSpeech(post: Post, folder: string) {
+  if (post.title) await toSpeech(post.title, `./videos/${folder}/${post.id}_title.mp3`)
+  if (post.body) await toSpeech(post.body, `./videos/${folder}/${post.id}_body.mp3`)
+  if(post.replies) {
+    for (const reply of post.replies) {
+      await RedditToSpeech(reply, folder)
+    }
   }
 }
 

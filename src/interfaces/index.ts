@@ -1,25 +1,26 @@
-export interface Tweet {
-  id: string
-  replyTo?: string
-  likes: number
-  text: string
-  name: string
-  username: string
-  description: string
-  image: string
+
+export interface Scene {
+  type: 'intro' | 'reddit' | 'outro'
+  reddit?: Post
+}
+export interface Script {
+  title: string
+  folder: string
+  scenes: Scene[]
 }
 
-export interface Script {
-  type: 'intro' | 'thread' | 'ad' | 'outro'
-  text: string
-  position: number
-  content: {
-    type: 'thread' | 'intro' | 'url' | 'outro'
-    thread: Tweet[] | null
-  }
+export interface User {
+  name: string,
+  image?: string,
 }
-export interface ScriptJson {
-  script: Script[]
-  folder: string
-  title: string
+
+export interface Post {
+  id: string,
+  author?: User,
+  subreddit?: string,
+  title?: string,
+  body?: string,
+  replies?: Post[],
+  created_utc?: number,
+  score?: number,
 }

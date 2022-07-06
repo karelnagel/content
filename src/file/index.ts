@@ -1,8 +1,8 @@
 import fs from 'fs'
-import { ScriptJson } from 'src/interfaces'
+import { Script } from 'src/interfaces'
 
-export async function writeJson(object: ScriptJson, folder: string): Promise<string> {
-  const fileName = `${folder}/script.json`
+export async function writeJson(object: object, folder: string, file = "script.json"): Promise<string> {
+  const fileName = `${folder}/${file}`
   await makeDirectory(folder)
 
   return new Promise((resolve, reject) => {
@@ -24,4 +24,7 @@ export async function makeDirectory(folder: string) {
       else resolve(folder)
     })
   })
+}
+export const readJson = async (folder: string, file = "script.json"): Promise<Script> => {
+return JSON.parse(fs.readFileSync(`./videos/${folder}/${file}`, "utf8"))
 }
