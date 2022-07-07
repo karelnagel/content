@@ -1,6 +1,6 @@
 import { Configuration, OpenAIApi } from 'openai'
 
-import config from './../conf.js'
+import { config } from '../config.js'
 
 const openai = new OpenAIApi(
   new Configuration({

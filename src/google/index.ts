@@ -2,14 +2,14 @@ import textToSpeech from '@google-cloud/text-to-speech'
 import fs from 'fs'
 import { Post } from 'src/interfaces'
 import util from 'util'
-import config from './../conf.js'
+import { config } from '../config.js'
 
 const client = new textToSpeech.TextToSpeechClient()
 
 export async function RedditToSpeech(post: Post, folder: string) {
   if (post.title) await toSpeech(post.title, `./videos/${folder}/${post.id}_title.mp3`)
   if (post.body) await toSpeech(post.body, `./videos/${folder}/${post.id}_body.mp3`)
-  if(post.replies) {
+  if (post.replies) {
     for (const reply of post.replies) {
       await RedditToSpeech(reply, folder)
     }

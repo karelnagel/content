@@ -1,7 +1,8 @@
 
 export interface Scene {
   type: 'intro' | 'reddit' | 'outro'
-  reddit?: Post
+  reddit?: Post,
+  duration?: number
 }
 export interface Script {
   title: string
@@ -23,4 +24,6 @@ export interface Post {
   replies?: Post[],
   created_utc?: number,
   score?: number,
+  bodyDuration?: number,
+  titleDuration?: number
 }

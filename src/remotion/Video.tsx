@@ -5,19 +5,18 @@ import { Intro } from './screens/Intro'
 import { Outro } from './screens/Outro'
 import { Reddit } from './screens/Reddit'
 
-export const Video: React.FC<{
-  scenes: Scene[]
-  durations: number[]
-}> = ({ scenes, durations }) => {
+export const Video: React.FC<{ newScenes: Scene[] }> = ({ newScenes }) => {
   return (
     <Series>
-      {scenes.map((scene, i) => (
-        <Series.Sequence key={i} durationInFrames={durations[i] ?? 1}>
-          {scene.type === 'intro' && <Intro />}
-          {scene.type === 'outro' && <Outro />}
-          {scene.type === 'reddit' && <Reddit post={scene.reddit!} />}
-        </Series.Sequence>
-      ))}
+      {newScenes.map((scene, i) => {
+        return (
+          <Series.Sequence key={i} durationInFrames={scene.duration ?? 1} layout="none">
+            {scene.type === 'intro' && <Intro />}
+            {scene.type === 'outro' && <Outro />}
+            {scene.type === 'reddit' && <Reddit post={scene.reddit} />}
+          </Series.Sequence>
+        )
+      })}
     </Series>
   )
 }

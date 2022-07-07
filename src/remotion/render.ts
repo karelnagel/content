@@ -1,5 +1,5 @@
 import { exec } from 'child_process'
-import config from '../conf.js'
+import { config } from '../config.js'
 
 const render = async (folder: string): Promise<string | null> => {
   const filePath = `./videos/${folder}/video.mp4`
@@ -7,7 +7,7 @@ const render = async (folder: string): Promise<string | null> => {
 
   const idk: string | null = await new Promise(resolve => {
     exec(
-      `npx remotion render src/remotion/index.tsx ${config.composition} ${filePath}  --props=./videos/${folder}/script.json`,
+      `npx remotion render src/remotion/index.tsx ${config.remotion.composition} ${filePath}  --props=./videos/${folder}/script.json`,
       async function (err) {
         if (err) {
           console.log(err)

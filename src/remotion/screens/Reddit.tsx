@@ -1,45 +1,30 @@
-import React, { useEffect, useState } from 'react'
-import { AbsoluteFill, continueRender, delayRender, getInputProps, Series, Audio, Img } from 'remotion'
+import React from 'react'
+import { AbsoluteFill, getInputProps, Series, Audio, Img } from 'remotion'
 import { Post, Script } from 'src/interfaces'
-
-import { fps, getRedditLength } from '../Root'
 const { folder } = getInputProps() as Script
 
 const image =
   'https://external-preview.redd.it/_o7PutALILIg2poC9ed67vHQ68Cxx67UT6q7CFAhCs4.png?auto=webp&s=2560c01cc455c9dcbad0d869116c938060e43212'
-export const Reddit: React.FC<{ post: Post }> = ({ post }) => {
-  const [handle] = useState(() => delayRender())
 
-  const [durations, setDurations] = useState<number[]>([])
-  useEffect(() => {
-    const effect = async () => {
-      const durs: number[] = []
-      durs.push(Math.floor((await getRedditLength(post, folder, false)) * fps))
-      if (post.replies)
-        for (const reply of post.replies) {
-          durs.push(Math.floor((await getRedditLength(reply, folder)) * fps))
-        }
-      setDurations(durs)
-      continueRender(handle)
-    }
-    effect()
-  }, [handle])
+export const Reddit: React.FC<{ post?: Post }> = ({ post }) => {
   return (
     <>
       <AbsoluteFill className="  bg-white w-full h-full ">
-        <div className="flex flex-col items-center justify-center max-w-screen-lg m-auto">
-          <Series>
-            <Series.Sequence durationInFrames={durations[0] ?? 1} layout="none">
-              <RedditPost post={post} />
-            </Series.Sequence>
-            {post.replies &&
-              post.replies.map((reply, i) => (
-                <Series.Sequence key={i} durationInFrames={durations[i + 1] ?? 1} layout="none">
-                  <RedditComment post={reply} />
-                </Series.Sequence>
-              ))}
-          </Series>
-        </div>
+        {post && (
+          <div className="flex flex-col items-center justify-center max-w-screen-lg m-auto">
+            <Series>
+              <Series.Sequence durationInFrames={post.titleDuration ?? 1} layout="none">
+                <RedditPost post={post} />
+              </Series.Sequence>
+              {post.replies &&
+                post.replies.map((reply, i) => (
+                  <Series.Sequence key={i} durationInFrames={reply.bodyDuration ?? 1} layout="none">
+                    <RedditComment post={reply} />
+                  </Series.Sequence>
+                ))}
+            </Series>
+          </div>
+        )}
       </AbsoluteFill>
     </>
   )
@@ -67,29 +52,18 @@ export const RedditPost: React.FC<{ post: Post }> = ({ post }) => {
 }
 
 export const RedditComment: React.FC<{ post: Post }> = ({ post }) => {
-  const [handle] = useState(() => delayRender())
-
-  const [durations, setDurations] = useState<number[]>([])
-  useEffect(() => {
-    const effect = async () => {
-      const durs: number[] = []
-      durs.push(Math.floor((await getRedditLength(post, folder, false)) * fps))
-      if (post.replies)
-        for (const reply of post.replies) {
-          durs.push(Math.floor((await getRedditLength(reply, folder)) * fps))
-        }
-      setDurations(durs)
-      continueRender(handle)
-    }
-    effect()
-  }, [handle])
   return (
     <>
       <Comment post={post} />
       <Series>
         {post.replies &&
           post.replies.map((reply, i) => (
-            <Series.Sequence layout="none" durationInFrames={durations[i + 1] ?? 1} key={i} offset={durations[0]}>
+            <Series.Sequence
+              layout="none"
+              durationInFrames={reply.bodyDuration ?? 1}
+              key={i}
+              offset={post.bodyDuration ?? 1}
+            >
               <Comment post={reply} />
               <Audio src={require(`./../../../videos/${folder}/${reply.id}_body.mp3`)} />
             </Series.Sequence>

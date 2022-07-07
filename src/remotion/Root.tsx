@@ -1,110 +1,71 @@
 import React, { useEffect, useState } from 'react'
 import { Composition, continueRender, delayRender, getInputProps } from 'remotion'
 import { Video } from './Video'
-import { getAudioDurationInSeconds } from '@remotion/media-utils'
 import './style.css'
 import { Intro } from './screens/Intro'
-import { Post, Scene, Script } from 'src/interfaces'
+import { Scene, Script } from 'src/interfaces'
 import { Outro } from './screens/Outro'
 import { Reddit } from './screens/Reddit'
+import { getDurations } from './audio'
+import { config } from '../config'
 
-export const fps = 30
-export const logoDuration = fps * 2
 const { scenes, folder } = getInputProps() as Script
-
-const getLength = async (scenes: Scene[], folder: string) => {
-  const durations = []
-  let length = 0
-  for (const scene of scenes) {
-    let duration = 0
-    if (scene.type === 'intro') {
-      duration = logoDuration
-    }
-    if (scene.type === 'reddit' && scene.reddit) {
-      duration = Math.floor((await getRedditLength(scene.reddit, folder)) * fps)
-    }
-    if (scene.type === 'outro') {
-      duration = logoDuration
-    }
-    length += duration
-    durations.push(duration)
-  }
-  return { length, durations }
-}
-export const getRedditLength = async (post: Post, folder: string, recursive = true): Promise<number> => {
-  let length = 0
-  if (post.title) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const audio = require(`./../../videos/${folder}/${post.id}_title.mp3`)
-    length += await getAudioDurationInSeconds(audio)
-  }
-  if (post.body) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const audio = require(`./../../videos/${folder}/${post.id}_body.mp3`)
-    length += await getAudioDurationInSeconds(audio)
-  }
-  if (post.replies && recursive)
-    for (const reply of post.replies) {
-      length += await getRedditLength(reply, folder)
-    }
-  return length
-}
-
+const fps = config.remotion.fps
+const width = config.remotion.width
+const height = config.remotion.height
 export const Root: React.FC = () => {
   const [handle] = useState(() => delayRender())
-  const [totalDutration, setTotalDuration] = useState(1)
-  const [durations, setDurations] = useState<number[]>([])
+  const [newScenes, setNewScenes] = useState<Scene[]>([])
 
   useEffect(() => {
     const effect = async () => {
-      const { length, durations } = await getLength(scenes, folder)
-      setDurations(durations)
-      setTotalDuration(length)
+      const scen = await getDurations(scenes, folder)
+      setNewScenes(scen)
       continueRender(handle)
     }
     effect()
   }, [handle])
+  console.log(newScenes)
   return (
     <>
       <Composition
         id={`Video`}
         component={Video}
-        durationInFrames={totalDutration}
+        durationInFrames={newScenes.reduce((acc, scene) => acc + (scene.duration || 1), 0) || 1}
         fps={fps}
-        width={1920}
-        height={1080}
+        width={width}
+        height={height}
         defaultProps={{
-          scenes,
-          durations,
+          newScenes,
         }}
       />
       <Composition
         id={`Intro`}
         component={Intro}
-        durationInFrames={logoDuration}
+        durationInFrames={scenes[0].duration ?? 1}
         fps={fps}
-        width={1920}
-        height={1080}
+        width={width}
+        height={height}
         defaultProps={{}}
       />
       <Composition
         id={`Outro`}
         component={Outro}
-        durationInFrames={logoDuration}
+        durationInFrames={scenes[2].duration ?? 1}
         fps={fps}
-        width={1920}
-        height={1080}
+        width={width}
+        height={height}
         defaultProps={{}}
       />
       <Composition
         id={`Reddit`}
         component={Reddit}
-        durationInFrames={4 * fps}
+        durationInFrames={scenes[1].duration ?? 1}
         fps={fps}
-        width={1920}
-        height={1080}
+        width={width}
+        height={height}
         defaultProps={{
-          post: scenes[2].reddit!,
+          post: scenes[1].reddit,
         }}
       />
     </>
