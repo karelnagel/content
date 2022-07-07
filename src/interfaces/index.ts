@@ -7,6 +7,8 @@ export interface Scene {
 export interface Script {
   title: string
   folder: string
+  video?: string
+  image?: string
   scenes: Scene[]
 }
 

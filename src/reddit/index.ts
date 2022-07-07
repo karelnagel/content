@@ -41,7 +41,7 @@ export default async function reddit(folder?: string) {
     const thread = await getThread(post, config.reddit.depth, config.reddit.limit, config.reddit.sort as Sort)
     const script: Script = {
       folder: post,
-      title: `${thread.title?.split(/.|!|?/)[0]} (r/${thread.subreddit})`,
+      title: `${thread.title} (r/${thread.subreddit})`,
       scenes: [{ type: "intro" }, { type: "reddit", reddit: thread }, { type: "outro" }]
     }
     await writeJson(script, post, config.reddit.json)

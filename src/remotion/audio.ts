@@ -6,7 +6,6 @@ export const getDurations = (scenes: Scene[]) => {
     if (scene.type === 'intro')
       return { ...scene, duration: config.remotion.introDuration }
     else if (scene.type === 'reddit' && scene.reddit) {
-      console.log("asdasdasdasd", getPostDuration(scene.reddit))
       return { ...scene, duration: getPostDuration(scene.reddit) }
     }
     else if (scene.type === 'outro')
@@ -18,11 +17,9 @@ export const getDurations = (scenes: Scene[]) => {
 export const getPostDuration = (post: Post): number => {
   let length = 0
   if (post.titleDuration) {
-    console.log("titleDuration", post.titleDuration,post.id)
     length += post.titleDuration
   }
   if (post.bodyDuration) {
-    console.log("bodyDuration", post.bodyDuration,post.id)
     length += post.bodyDuration
   }
   if (post.replies)

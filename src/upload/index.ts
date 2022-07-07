@@ -12,7 +12,11 @@ export const post = async (folder: string, post: string, title: string, platform
 
   const body = { post, platforms, mediaUrls: [med], youTubeOptions: { title, youTubeVisibility: "public" } }
   try {
-    const result = await axios.post(`https://app.ayrshare.com/api/post`, body, { headers });
+    const result = await axios.post(`https://app.ayrshare.com/api/post`, body, {
+      headers,
+      'maxContentLength': Infinity,
+      'maxBodyLength': Infinity
+    });
     console.log(result.data)
     return result.data.postIds?.map((post: any) => post.postUrl)
   } catch (e) {
@@ -25,7 +29,8 @@ export const media = async (filePath: string) => {
   const body = { file: `data:video/mp4;base64,${file}`, fileName: "file.mp4", description: "video" }
   try {
     const result = await axios.post(`https://app.ayrshare.com/api/media/upload`, body, {
-      headers
+      headers, 'maxContentLength': Infinity,
+      'maxBodyLength': Infinity
     });
     return result.data.url
   }
