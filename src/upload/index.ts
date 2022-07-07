@@ -1,38 +1,32 @@
 import axios from "axios"
+import { Storage } from '@google-cloud/storage';
+import { config } from "../config.js";
 
-import fs from 'fs/promises';
 const API_KEY = process.env.AYRSHARE; // get an API Key at ayrshare.com
 const headers = {
   "Content-Type": "application/json",
   "Authorization": `Bearer ${API_KEY}`
 }
-export const post = async (folder: string, post: string, title: string, platforms = ["youtube"]) => {
-  const med = await media(`videos/${folder}/video.mp4`)
-  if (!med) return
+const storage = new Storage({ keyFilename: 'google-key.json' });
+const bucketName = config.bucketName;
 
-  const body = { post, platforms, mediaUrls: [med], youTubeOptions: { title, youTubeVisibility: "public" } }
+export const post = async (folder: string, post: string, title: string, platforms = ["youtube"]) => {
+  const idk = await storage.bucket(bucketName).upload(`videos/${folder}/video.mp4`, { destination: `${folder}.mp4` });
+  const med = idk[1]?.mediaLink
+  console.log(med)
+  if (!med) return false
+
+  const body = { post, platforms, mediaUrls: [med], youTubeOptions: { title, youTubeVisibility: "public" }, isVideo: true }
   try {
     const result = await axios.post(`https://app.ayrshare.com/api/post`, body, {
       headers,
       'maxContentLength': Infinity,
       'maxBodyLength': Infinity
     });
+
     console.log(result.data)
     return result.data.postIds?.map((post: any) => post.postUrl)
   } catch (e) {
-    console.log(e)
+    console.log(JSON.stringify(e, null, 2))
   }
-};
-
-export const media = async (filePath: string) => {
-  const file = await fs.readFile(filePath, { encoding: 'base64' });
-  const body = { file: `data:video/mp4;base64,${file}`, fileName: "file.mp4", description: "video" }
-  try {
-    const result = await axios.post(`https://app.ayrshare.com/api/media/upload`, body, {
-      headers, 'maxContentLength': Infinity,
-      'maxBodyLength': Infinity
-    });
-    return result.data.url
-  }
-  catch (e) { console.log(e) }
 };

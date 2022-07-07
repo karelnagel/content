@@ -1,6 +1,7 @@
 
 export const config = {
   folderPath: 'videos',
+  bucketName: "content_bucket32",
   reddit: {
     subreddit: 'AskReddit',
     limit: 10,
@@ -34,7 +35,7 @@ export const config = {
     speakingRate: 1,
     gender: 'MALE',
   },
-  upload:{
-    platforms:["youtube"]
+  upload: {
+    platforms: ["youtube"]
   }
 }
