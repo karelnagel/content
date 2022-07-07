@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'dotenv/config'
 import { post } from './upload/index.js'
-import { readJson } from './file/index.js'
+import { readJson, writeJson } from './file/index.js'
 import { RedditToSpeech } from './google/index.js'
 import reddit from './reddit/index.js'
 import render from './remotion/render.js'
@@ -11,7 +11,7 @@ export const getFolder = () => process.argv[3]
 export const getProgram = () => process.argv[2] === "all" ? "reddit,tts,remotion,upload" : process.argv[2]
 
 export default async function main() {
-  let folder = getFolder() || new Date().toISOString()
+  let folder = getFolder()
   const program = getProgram()
 
   if (!program.includes("all") && !program.includes("reddit") && !program.includes("tts") && !program.includes("remotion") && !program.includes("upload")) {
@@ -22,14 +22,17 @@ export default async function main() {
   console.log(`Starting ${program} with folder: ${folder}`)
 
   if (program.includes("reddit")) {
-    const threads = await reddit()
+    const threads = await reddit(folder)
     folder = threads[0]
   }
 
   if (program.includes("tts")) {
     const script = await readJson(folder)
     const post = script.scenes[1].reddit
-    if (post) await RedditToSpeech(post, folder)
+    if (post) {
+      script.scenes[1].reddit = await RedditToSpeech(post, folder)
+      await writeJson(script, folder, config.reddit.json)
+    }
   }
 
   if (program.includes("remotion")) {

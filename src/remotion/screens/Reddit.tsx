@@ -1,6 +1,8 @@
 import React from 'react'
 import { AbsoluteFill, getInputProps, Series, Audio, Img } from 'remotion'
 import { Post, Script } from 'src/interfaces'
+import { getPostDuration } from '../audio'
+import { secondsToFrames } from '../Root'
 const { folder } = getInputProps() as Script
 
 const image =
@@ -13,12 +15,12 @@ export const Reddit: React.FC<{ post?: Post }> = ({ post }) => {
         {post && (
           <div className="flex flex-col items-center justify-center max-w-screen-lg m-auto">
             <Series>
-              <Series.Sequence durationInFrames={post.titleDuration ?? 1} layout="none">
+              <Series.Sequence durationInFrames={secondsToFrames(post.titleDuration)} layout="none">
                 <RedditPost post={post} />
               </Series.Sequence>
               {post.replies &&
                 post.replies.map((reply, i) => (
-                  <Series.Sequence key={i} durationInFrames={reply.bodyDuration ?? 1} layout="none">
+                  <Series.Sequence key={i} durationInFrames={secondsToFrames(getPostDuration(reply))} layout="none">
                     <RedditComment post={reply} />
                   </Series.Sequence>
                 ))}
@@ -54,18 +56,24 @@ export const RedditPost: React.FC<{ post: Post }> = ({ post }) => {
 export const RedditComment: React.FC<{ post: Post }> = ({ post }) => {
   return (
     <>
-      <Comment post={post} />
+      <div className="w-full flex flex-col">
+        <div className="flex items-center space-x-3">
+          <Img src={image} className="h-12 w-12 rounded-full" />
+          <p className="text-sm font-bold">{post.author?.name}</p>
+        </div>
+        <p>{post.body}</p>
+        <p className=" font-bold">{formatNumber(post.score ?? 0)}</p>
+      </div>
       <Series>
         {post.replies &&
           post.replies.map((reply, i) => (
             <Series.Sequence
               layout="none"
-              durationInFrames={reply.bodyDuration ?? 1}
+              durationInFrames={secondsToFrames(getPostDuration(reply))}
               key={i}
-              offset={post.bodyDuration ?? 1}
+              offset={secondsToFrames(post.bodyDuration)}
             >
-              <Comment post={reply} />
-              <Audio src={require(`./../../../videos/${folder}/${reply.id}_body.mp3`)} />
+              <RedditComment post={reply} />
             </Series.Sequence>
           ))}
       </Series>
@@ -73,19 +81,6 @@ export const RedditComment: React.FC<{ post: Post }> = ({ post }) => {
     </>
   )
 }
-export function Comment({ post }: { post: Post }) {
-  return (
-    <div className="w-full flex flex-col">
-      <div className="flex items-center space-x-3">
-        <Img src={image} className="h-12 w-12 rounded-full" />
-        <p className="text-sm font-bold">{post.author?.name}</p>
-      </div>
-      <p>{post.body}</p>
-      <p className=" font-bold">{formatNumber(post.score ?? 0)}</p>
-    </div>
-  )
-}
-
 //function to format number to thousands and millions
 export function formatNumber(num: number) {
   if (num >= 1000000000) {

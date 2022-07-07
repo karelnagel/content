@@ -4,9 +4,9 @@ export const config = {
   reddit: {
     subreddit: 'AskReddit',
     limit: 10,
-    depth: 2,
+    depth: 3,
     sort: 'top',
-    posts: 2,
+    posts: 1,
     json: "script.json"
   },
   remotion: {
@@ -14,6 +14,8 @@ export const config = {
     fps: 30,
     width: 1920,
     height: 1080,
+    // width: 1080,
+    // height: 1920,
     introDuration: 2,
     outroDuration: 2
   },

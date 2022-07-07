@@ -3,8 +3,8 @@ import { config } from './../config.js'
 import { Script } from './../interfaces'
 
 export async function writeJson(object: object, folder: string, file = config.reddit.json): Promise<string> {
-  const fileName = `${folder}/${file}`
-  await makeDirectory(folder)
+  const fileName = `./${config.folderPath}/${folder}/${file}`
+  await makeDirectory(`./${config.folderPath}/${folder}`)
 
   await fs.writeFile(fileName, JSON.stringify(object, null, 2),)
   return fileName
