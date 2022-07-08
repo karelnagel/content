@@ -42,7 +42,8 @@ export default async function reddit(folder?: string) {
     const script: Script = {
       folder: post,
       title: `${thread.title} (r/${thread.subreddit})`,
-      scenes: [{ type: "intro" }, { type: "reddit", reddit: thread }, { type: "outro" }]
+      scenes: [{ type: "reddit", reddit: thread }]
+      // scenes: [{ type: "intro" }, { type: "reddit", reddit: thread }, { type: "outro" }]
     }
     await writeJson(script, post, config.reddit.json)
   }

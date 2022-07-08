@@ -51,6 +51,7 @@
     "prettier": "^2.6.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^4.4.0",
     "remotion": "^3.0.19",
     "supertest": "^6.2.2",
     "tailwindcss": "2",

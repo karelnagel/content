@@ -1,6 +1,6 @@
 import path from "path";
 import { bundle } from "@remotion/bundler";
-import { getCompositions, renderMedia } from "@remotion/renderer";
+import { getCompositions, renderMedia, renderStill } from "@remotion/renderer";
 import fs from "fs/promises"
 import { config } from "../config.js";
 
@@ -61,6 +61,25 @@ export const start = async (folder: string) => {
   });
 
   // Select the composition you want to render.
+  const imageComposition = comps.find((c) => c.id === config.remotion.still);
+
+  // Ensure the composition exists
+  if (!imageComposition) {
+    throw new Error(`No thumbnail composition found.
+  Review "${entry}" for the correct ID.`);
+  }
+
+  const imageOutputLocation = `./videos/${folder}/thumbnail.png`;
+  console.log("Attempting to render:", imageOutputLocation);
+  await renderStill({
+    composition: imageComposition,
+    serveUrl: bundleLocation,
+    output: imageOutputLocation,
+    inputProps,
+  });
+  console.log("Thumbnail rendered:", imageOutputLocation);
+
+
   const composition = comps.find((c) => c.id === compositionId);
 
   // Ensure the composition exists
@@ -78,7 +97,7 @@ export const start = async (folder: string) => {
     codec: "h264",
     outputLocation,
     inputProps,
-    onProgress: (progress) => process.stdout.write(`Rendering: ${progress.renderedFrames}/${frames} frames or ${Math.round(progress.renderedFrames/frames *100)}% \r`),
+    onProgress: (progress) => process.stdout.write(`Rendering: ${progress.renderedFrames}/${frames} frames or ${Math.round(progress.renderedFrames / frames * 100)}% \r`),
     onStart: (data => frames = data.frameCount)
   });
   console.log("Render done!");

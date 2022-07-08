@@ -9,7 +9,7 @@ import { downloadImage, downloadVideo } from './pixabay/index.js'
 import { start } from './remotion/render.js'
 
 export const getFolder = () => process.argv[3]
-export const getProgram = () => process.argv[2] === "all" ? "reddit,tts,remotion,upload,getvideo,getimage" : process.argv[2]
+export const getProgram = () => process.argv[2] === "all" ? "reddit,tts,remotion,upload,getvideo,getimage" : process.argv[2]==="ready" ? "tts,remotion,upload,getvideo,getimage" : process.argv[2]
 
 export default async function main() {
   let folder = getFolder()
@@ -29,9 +29,9 @@ export default async function main() {
 
   if (program.includes("tts")) {
     const script = await readJson(folder)
-    const post = script.scenes[1].reddit
+    const post = script.scenes.find(s => s.type === "reddit")?.reddit
     if (post) {
-      script.scenes[1].reddit = await RedditToSpeech(post, folder)
+      script.scenes.find(s => s.type === "reddit")!.reddit = await RedditToSpeech(post, folder)
       await writeJson(script, folder, config.reddit.json)
     }
   }

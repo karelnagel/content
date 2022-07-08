@@ -4,14 +4,15 @@ export const config = {
   bucketName: "content_bucket32",
   reddit: {
     subreddit: 'AskReddit',
-    limit: 10,
-    depth: 3,
+    limit: 12,
+    depth: 4,
     sort: 'top',
     posts: 1,
     json: "script.json"
   },
   remotion: {
     composition: "Video",
+    still: "Thumbnail",
     fps: 30,
     width: 1920,
     height: 1080,
@@ -39,3 +40,4 @@ export const config = {
     platforms: ["youtube"]
   }
 }
+//yarn start all vtbyxd 91744 19247 & yarn start all vtlmtv 110734 7151639 & yarn start all vtukcw 88738 3774381
