@@ -5,6 +5,7 @@ export interface Scene {
   duration?: number
 }
 export interface Script {
+  tiktok?:boolean
   title: string
   folder: string
   video?: string

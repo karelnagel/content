@@ -10,13 +10,16 @@ const headers = {
 const storage = new Storage({ keyFilename: 'google-key.json' });
 const bucketName = config.bucketName;
 
-export const post = async (folder: string, post: string, title: string, platforms = ["youtube"]) => {
-  const med = await uploadVideo(folder)
-  const thumbNail = await uploadImage(folder)
-  console.log(med, thumbNail)
+export const post = async (folder: string, post: string, title: string, platforms = ["youtube"], tiktok = false) => {
+  const med = await uploadVideo(folder, tiktok ? "tiktok.mp4" : "video.mp4")
+  const thumbNail = !tiktok ? await uploadVideo(folder, "thumbnail.png") : ""
   if (!med) return false
-
-  const body = { post, platforms, mediaUrls: [med], youTubeOptions: { title, youTubeVisibility: "public", thumbNail }, isVideo: true }
+  console.log(med, thumbNail)
+  const body = {
+    post, platforms, mediaUrls: [med],
+    isVideo: true,
+    youTubeOptions: !tiktok ? { title, youTubeVisibility: "public", thumbNail } : undefined
+  }
   try {
     const result = await axios.post(`https://app.ayrshare.com/api/post`, body, {
       headers,
@@ -30,12 +33,10 @@ export const post = async (folder: string, post: string, title: string, platform
     console.log(JSON.stringify(e, null, 2))
   }
 };
-export async function uploadVideo(folder: string) {
-  const idk = await storage.bucket(bucketName).upload(`videos/${folder}/video.mp4`, { destination: `${folder}.mp4` });
-  return idk[1]?.mediaLink
-}
 
-export async function uploadImage(folder: string) {
-  const idk = await storage.bucket(bucketName).upload(`videos/${folder}/thumbnail.png`, { destination: `${folder}.png` });
-  return idk[1]?.mediaLink
+const bucketUrl = (folder: string, file: string) => `https://storage.googleapis.com/${bucketName}/${folder}/${file}`
+
+export async function uploadVideo(folder: string, file: string) {
+  await storage.bucket(bucketName).upload(`${config.folderPath}/${folder}/${file}`, { destination: `${folder}/${file}` });
+  return bucketUrl(folder, file)
 }

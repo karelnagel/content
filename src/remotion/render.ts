@@ -4,10 +4,9 @@ import { getCompositions, renderMedia, renderStill } from "@remotion/renderer";
 import fs from "fs/promises"
 import { config } from "../config.js";
 
-export const start = async (folder: string) => {
+export const start = async (folder: string, tiktok = false, maxLength?: number) => {
   const compositionId = config.remotion.composition;
 
-  // You only have to do this once, you can reuse the bundle.
   const entry = "./src/remotion/index";
   console.log("Creating a Webpack bundle of the video");
   const bundleLocation = await bundle(path.resolve(entry), undefined,
@@ -48,47 +47,34 @@ export const start = async (folder: string) => {
       })
     });
 
-  // Parametrize the video by passing arbitrary props to your component.
   const inputProps = JSON.parse(await fs.readFile(`./videos/${folder}/script.json`, "utf8"));
 
-  // Extract all the compositions you have defined in your project
-  // from the webpack bundle.
   const comps = await getCompositions(bundleLocation, {
-    // You can pass custom input props that you can retrieve using getInputProps()
-    // in the composition list. Use this if you want to dynamically set the duration or
-    // dimensions of the video.
-    inputProps,
+    inputProps: { ...inputProps, tiktok },
   });
+  if (!tiktok) {
+    const imageComposition = comps.find((c) => c.id === config.remotion.still);
+    if (!imageComposition)
+      throw new Error(`No thumbnail composition found.`);
 
-  // Select the composition you want to render.
-  const imageComposition = comps.find((c) => c.id === config.remotion.still);
-
-  // Ensure the composition exists
-  if (!imageComposition) {
-    throw new Error(`No thumbnail composition found.
-  Review "${entry}" for the correct ID.`);
+    const imageOutputLocation = `./videos/${folder}/thumbnail.png`;
+    console.log("Attempting to render:", imageOutputLocation);
+    await renderStill({
+      composition: imageComposition,
+      serveUrl: bundleLocation,
+      output: imageOutputLocation,
+      inputProps,
+    });
+    console.log("Thumbnail rendered:", imageOutputLocation);
   }
-
-  const imageOutputLocation = `./videos/${folder}/thumbnail.png`;
-  console.log("Attempting to render:", imageOutputLocation);
-  await renderStill({
-    composition: imageComposition,
-    serveUrl: bundleLocation,
-    output: imageOutputLocation,
-    inputProps,
-  });
-  console.log("Thumbnail rendered:", imageOutputLocation);
-
 
   const composition = comps.find((c) => c.id === compositionId);
 
-  // Ensure the composition exists
   if (!composition) {
-    throw new Error(`No composition with the ID ${compositionId} found.
-  Review "${entry}" for the correct ID.`);
+    throw new Error(`No composition with the ID ${compositionId} found`);
   }
 
-  const outputLocation = `./videos/${folder}/video.mp4`;
+  const outputLocation = `./videos/${folder}/${tiktok ? "tiktok.mp4" : "video.mp4"}`;
   console.log("Attempting to render:", outputLocation);
   let frames = 1;
   await renderMedia({
@@ -97,7 +83,7 @@ export const start = async (folder: string) => {
     codec: "h264",
     outputLocation,
     inputProps,
-    onProgress: (progress) => process.stdout.write(`Rendering: ${progress.renderedFrames}/${frames} frames or ${Math.round(progress.renderedFrames / frames * 100)}% \r`),
+    onProgress: (progress) => process.stdout.write(`Rendering: ${progress.renderedFrames}/${frames} or ${Math.round(progress.renderedFrames / frames * 100)}%, total ${Math.round(frames / config.remotion.fps)}s \r`),
     onStart: (data => frames = data.frameCount)
   });
   console.log("Render done!");

@@ -29,21 +29,23 @@ export const Reddit: React.FC<{ post?: Post; video?: string }> = ({ post, video 
       <AbsoluteFill className="bg-white">
         {video && (
           <Loop durationInFrames={secondsToFrames(videoDuration)}>
-            <Video src={video} volume={0} />
+            <Video src={video} volume={0} className="object-cover" />
           </Loop>
         )}
       </AbsoluteFill>
       <AbsoluteFill className="">
         {post && (
-          <div className="flex flex-col max-w-screen-lg mx-auto pt-72 w-full">
+          <div className="flex flex-col max-w-screen-lg mx-auto my-auto 2xl:my-0 2xl:pt-72 w-full p-4">
             <Series>
               <Series.Sequence durationInFrames={secondsToFrames(post.titleDuration)} layout="none">
                 <RedditPost post={post} />
               </Series.Sequence>
               {post.replies &&
                 post.replies.map((reply, i) => (
-                  <Series.Sequence key={i} durationInFrames={secondsToFrames(getPostDuration(reply))} layout="none">
-                    <RedditComment post={reply} />
+                  <Series.Sequence durationInFrames={secondsToFrames(getPostDuration(reply))} layout="none">
+                    <div key={i} className="-ml-7">
+                      <RedditComment post={reply} />
+                    </div>
                   </Series.Sequence>
                 ))}
             </Series>
@@ -57,7 +59,7 @@ export const Reddit: React.FC<{ post?: Post; video?: string }> = ({ post, video 
 export const RedditPost: React.FC<{ post: Post }> = ({ post }) => {
   return (
     <>
-      <div className="flex bg-white rounded-lg p-4 w-full text-xl space-x-5  min-w-max">
+      <div className="flex bg-white rounded-lg p-4 w-full text-2xl space-x-5 ">
         <div className="flex flex-col items-center space-y-2">
           <ImArrowUp className="text-2xl" />
           <p>{formatNumber(post.score ?? 0)}</p>
@@ -71,7 +73,7 @@ export const RedditPost: React.FC<{ post: Post }> = ({ post }) => {
             {/* <p>{post.created_utc}</p> */}
           </div>
 
-          <h2 className=" font-bold text-3xl">{post.title}</h2>
+          <h2 className=" font-bold text-4xl">{post.title}</h2>
         </div>
       </div>
       <Audio src={require(`./../../../videos/${folder}/${post.id}_title.mp3`)} />
@@ -81,19 +83,19 @@ export const RedditPost: React.FC<{ post: Post }> = ({ post }) => {
 
 export const RedditComment: React.FC<{ post: Post }> = ({ post }) => {
   return (
-    <div className="flex  w-full justify-stretch">
+    <div className="flex  w-full justify-stretch ">
       <div className="w-7 h-full"></div>
       <div className="flex flex-col w-full items-stretch">
         <div className="flex flex-col bg-white rounded-xl p-4 m-1 shadow-md space-y-2 ">
           <div className="flex items-center space-x-3">
-            <Img src={image} className="h-10 w-10 rounded-full" />
-            <p className="text-lg font-bold">{post.author?.name}</p>
+            <Img src={image} className="h-12 w-12 rounded-full" />
+            <p className="text-2xl font-bold">{post.author?.name}</p>
           </div>
-          <p className="text-2xl">{post.body}</p>
+          <p className="text-3xl">{post.body}</p>
           <div className="flex space-x-2 items-center">
-            <ImArrowUp className="text-xl" />
-            <p className=" font-bold text-lg">{formatNumber(post.score ?? 0)}</p>
-            <ImArrowDown className="text-xl" />
+            <ImArrowUp className="text-2xl" />
+            <p className=" font-bold text-2xl">{formatNumber(post.score ?? 0)}</p>
+            <ImArrowDown className="text-2xl" />
           </div>
         </div>
         <Series>

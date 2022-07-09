@@ -8,17 +8,12 @@ import { config } from './config.js'
 import { downloadImage, downloadVideo } from './pixabay/index.js'
 import { start } from './remotion/render.js'
 
-export const getFolder = () => process.argv[3]
-export const getProgram = () => process.argv[2] === "all" ? "reddit,tts,remotion,upload,getvideo,getimage" : process.argv[2]==="ready" ? "tts,remotion,upload,getvideo,getimage" : process.argv[2]
+export const getFolder = () => process.argv[2]
+export const getProgram = () => process.argv[3] === "all" ? "reddit,tts,remotion,upload,getvideo,getimage" : process.argv[3] === "ready" ? "tts,remotion,upload,getvideo,getimage" : process.argv[3]
 
 export default async function main() {
   let folder = getFolder()
   const program = getProgram()
-
-  // if (!program.includes("all") && !program.includes("reddit") && !program.includes("tts") && !program.includes("remotion") && !program.includes("upload")) {
-  //   console.error("Invalid program")
-  //   return
-  // }
 
   console.log(`Starting ${program} with folder: ${folder}`)
 
@@ -44,10 +39,20 @@ export default async function main() {
   if (program.includes("remotion")) {
     await start(folder)
   }
+  if (program.includes("remtik")) {
+    await start(folder, true)
+  }
 
   if (program.includes("upload")) {
     const script = await readJson(folder)
     const result = await post(folder, script.title, script.title, config.upload.platforms)
+    if (!result) return console.error("Failed to upload")
+    else console.log(result)
+  }
+
+  if (program.includes("uptik")) {
+    const script = await readJson(folder)
+    const result = await post(folder, script.title, script.title, ["tiktok"], true)
     if (!result) return console.error("Failed to upload")
     else console.log(result)
   }

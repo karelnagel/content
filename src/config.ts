@@ -4,7 +4,7 @@ export const config = {
   bucketName: "content_bucket32",
   reddit: {
     subreddit: 'AskReddit',
-    limit: 12,
+    limit: 15,
     depth: 4,
     sort: 'top',
     posts: 1,

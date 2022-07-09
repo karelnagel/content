@@ -10,10 +10,10 @@ import { getDurations } from './audio'
 import { config } from '../config'
 import { Thumbnail } from './screens/Thumbnail'
 
-const { scenes, image } = getInputProps() as Script
+const { scenes, image, tiktok } = getInputProps() as Script
 const fps = config.remotion.fps
-const width = config.remotion.width
-const height = config.remotion.height
+const width = !tiktok ? config.remotion.width : config.remotion.height
+const height = !tiktok ? config.remotion.height : config.remotion.width
 export const secondsToFrames = (seconds?: number) => (seconds ? Math.floor(fps * seconds) : 1)
 
 export const Root: React.FC = () => {
@@ -34,7 +34,7 @@ export const Root: React.FC = () => {
       <Composition
         id={`Intro`}
         component={Intro}
-        durationInFrames={secondsToFrames(newScenes.find(s=>s.type==="intro")?.duration)}
+        durationInFrames={secondsToFrames(newScenes.find(s => s.type === 'intro')?.duration)}
         fps={fps}
         width={width}
         height={height}
@@ -43,7 +43,7 @@ export const Root: React.FC = () => {
       <Composition
         id={`Outro`}
         component={Outro}
-        durationInFrames={secondsToFrames(newScenes.find(s=>s.type==="outro")?.duration)}
+        durationInFrames={secondsToFrames(newScenes.find(s => s.type === 'outro')?.duration)}
         fps={fps}
         width={width}
         height={height}
@@ -52,12 +52,12 @@ export const Root: React.FC = () => {
       <Composition
         id={`Reddit`}
         component={Reddit}
-        durationInFrames={secondsToFrames(newScenes.find(s=>s.type==="reddit")?.duration)}
+        durationInFrames={secondsToFrames(newScenes.find(s => s.type === 'reddit')?.duration)}
         fps={fps}
         width={width}
         height={height}
         defaultProps={{
-          post: newScenes.find(s=>s.type==="reddit")?.reddit,
+          post: newScenes.find(s => s.type === 'reddit')?.reddit,
         }}
       />
       <Still id={'Thumbnail'} component={Thumbnail} width={width} height={height} defaultProps={{ image, scenes }} />
