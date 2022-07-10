@@ -1,15 +1,25 @@
 import textToSpeech from '@google-cloud/text-to-speech'
 import fs from 'fs/promises'
-import { Post } from 'src/interfaces'
+import { Post } from '../interfaces'
 import { config } from '../config.js'
 import { getAudioDurationInSeconds } from 'get-audio-duration'
+import { makeDirectory, readJson, writeJson } from '../file/index.js'
 
 const client = new textToSpeech.TextToSpeechClient()
 
+export async function startToSpeech(folder: string) {
+  const script = await readJson(folder)
+  const post = script.scenes.find(s => s.type === "reddit")?.reddit
+  if (post) {
+    script.scenes.find(s => s.type === "reddit")!.reddit = await RedditToSpeech(post, folder)
+    await writeJson(script, folder, config.reddit.json)
+  }
+}
 export async function RedditToSpeech(post: Post, folder: string) {
   const newPost = post
-  if (newPost.title) newPost.titleDuration = await toSpeech(newPost.title, `./videos/${folder}/${newPost.id}_title.mp3`)
-  if (newPost.body) newPost.bodyDuration = await toSpeech(newPost.body, `./videos/${folder}/${newPost.id}_body.mp3`)
+  await makeDirectory(`./${config.folderPath}/${folder}/audio`)
+  if (newPost.title) newPost.titleDuration = await toSpeech(newPost.title, `./${config.folderPath}/${folder}/audio/${newPost.id}_title.mp3`)
+  if (newPost.body) newPost.bodyDuration = await toSpeech(newPost.body, `./${config.folderPath}/${folder}/audio/${newPost.id}_body.mp3`)
   if (newPost.replies) {
     const replies: Post[] = []
     for (const reply of newPost.replies) {

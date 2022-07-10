@@ -1,6 +1,7 @@
 import axios from "axios"
 import { Storage } from '@google-cloud/storage';
 import { config } from "../config.js";
+import { readJson } from "../file/index.js";
 
 const API_KEY = process.env.AYRSHARE; // get an API Key at ayrshare.com
 const headers = {
@@ -10,11 +11,14 @@ const headers = {
 const storage = new Storage({ keyFilename: 'google-key.json' });
 const bucketName = config.bucketName;
 
-export const post = async (folder: string, post: string, title: string, platforms = ["youtube"], tiktok = false) => {
-  const med = await uploadVideo(folder, tiktok ? "tiktok.mp4" : "video.mp4")
-  const thumbNail = !tiktok ? await uploadVideo(folder, "thumbnail.png") : ""
+export const post = async (folder: string, platforms = config.upload.platforms, tiktok = false) => {
+  const json = await readJson(folder)
+  const med = tiktok ? json.tiktokUpload?.url : json.youtubeUpload?.url
+  const thumbNail = tiktok ? json.tiktokUpload?.thumbnail : json.youtubeUpload?.thumbnail
+  const post = json.title
+  const title = json.title
   if (!med) return false
-  console.log(med, thumbNail)
+
   const body = {
     post, platforms, mediaUrls: [med],
     isVideo: true,
@@ -36,7 +40,7 @@ export const post = async (folder: string, post: string, title: string, platform
 
 const bucketUrl = (folder: string, file: string) => `https://storage.googleapis.com/${bucketName}/${folder}/${file}`
 
-export async function uploadVideo(folder: string, file: string) {
+export async function uploadToBucket(folder: string, file: string) {
   await storage.bucket(bucketName).upload(`${config.folderPath}/${folder}/${file}`, { destination: `${folder}/${file}` });
   return bucketUrl(folder, file)
 }

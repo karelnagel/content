@@ -1,63 +1,78 @@
 #!/usr/bin/env node
 import 'dotenv/config'
 import { post } from './upload/index.js'
-import { readJson, writeJson } from './file/index.js'
-import { RedditToSpeech } from './google/index.js'
+import { startToSpeech } from './google/index.js'
 import reddit from './reddit/index.js'
-import { config } from './config.js'
 import { downloadImage, downloadVideo } from './pixabay/index.js'
-import { start } from './remotion/render.js'
-import { render } from './remotion/lambda.js'
+import { render, renderThumbnail } from './remotion/render.js'
+import { lambda } from './remotion/lambda.js'
 
-export const getFolder = () => process.argv[2]
-export const getProgram = () => process.argv[3] === "all" ? "reddit,tts,remotion,upload,getvideo,getimage" : process.argv[3] === "ready" ? "tts,remotion,upload,getvideo,getimage" : process.argv[3]
+export const getParams = () => process.argv[3]
+export const getProgram = () => process.argv[2] === "all" ? ["reddit", "tts", "video", "image", "thumb", "rem", "up", "remtik", "uptik"] :
+  process.argv[2] === "lambda" ? ["reddit", "tts", "video", "image", "lamthumb", "lam", "up", "lamtik", "uptik"] :
+    process.argv[2] === "youtube" ? ["reddit", "tts", "video", "image", "thumb", "rem", "up"] :
+    process.argv[2] === "tiktok" ? ["reddit", "tts", "video", "image", "remtik", "uptik"] :
+      process.argv[2].split(",")
 
 export default async function main() {
-  let folder = getFolder()
-  const program = getProgram()
+  const programs = getProgram()
+  console.log(`Starting ${programs} `)
 
-  console.log(`Starting ${program} with folder: ${folder}`)
+  for (let i = 3; i < process.argv.length; i++) {
+    const props = process.argv[i].split(",")
+    const folder = props[0]
+    const video = props[1]
+    const image = props[2]
+    console.log(folder, video, image)
 
-  if (program.includes("reddit")) {
-    const threads = await reddit(folder)
-    folder = threads[0]
-  }
+    for (const program of programs) {
+      switch (program) {
+        case "reddit":
+          await reddit(folder)
+          break;
+        case "tts":
+          await startToSpeech(folder)
+          break;
 
-  if (program.includes("tts")) {
-    const script = await readJson(folder)
-    const post = script.scenes.find(s => s.type === "reddit")?.reddit
-    if (post) {
-      script.scenes.find(s => s.type === "reddit")!.reddit = await RedditToSpeech(post, folder)
-      await writeJson(script, folder, config.reddit.json)
+        case "video":
+          await downloadVideo(folder, video)
+          break;
+        case "image":
+          await downloadImage(folder, image)
+          break;
+
+        case "thumb":
+          await renderThumbnail(folder)
+          break;
+        case "rem":
+          await render(folder)
+          break;
+        case "remtik":
+          await render(folder, true)
+          break;
+
+        case "lamthumb":
+          await renderThumbnail(folder)
+          break;
+        case "lam":
+          await lambda(folder, false)
+          break;
+        case "lamtik":
+          await lambda(folder, true)
+          break;
+
+        case "up":
+          await post(folder)
+          break;
+        case "uptik":
+          await post(folder, ["tiktok"], true)
+          break;
+        default:
+          console.log(`${program} is not a valid program`)
+      }
     }
-  }
-  if (program.includes("getvideo")) {
-    if (process.argv[4]) await downloadVideo(folder, process.argv[4])
-  }
-  if (program.includes("getimage")) {
-    if (process.argv[5]) await downloadImage(folder, process.argv[5])
-  }
-  if (program.includes("remotion")) {
-    await render(folder)
-  }
-  if (program.includes("remtik")) {
-    await render(folder, true)
-  }
 
-  if (program.includes("upload")) {
-    const script = await readJson(folder)
-    const result = await post(folder, script.title, script.title, config.upload.platforms)
-    if (!result) return console.error("Failed to upload")
-    else console.log(result)
+    console.log(`Finished ${folder}`)
   }
-
-  if (program.includes("uptik")) {
-    const script = await readJson(folder)
-    const result = await post(folder, script.title, script.title, ["tiktok"], true)
-    if (!result) return console.error("Failed to upload")
-    else console.log(result)
-  }
-
-  console.log('Success')
 }
 main()

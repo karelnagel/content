@@ -1,85 +1,97 @@
 import path from "path";
 import { bundle } from "@remotion/bundler";
 import { getCompositions, renderMedia, renderStill } from "@remotion/renderer";
-import fs from "fs/promises"
 import { config } from "../config.js";
+import { readJson, writeJson } from "../file/index.js";
+import { uploadToBucket } from "../upload/index.js";
+import { Script } from "../interfaces/index.js";
 
-export const start = async (folder: string, tiktok = false) => {
-  const compositionId = config.remotion.composition;
-
-  const entry = "./src/remotion/index";
-  console.log("Creating a Webpack bundle of the video");
-  const bundleLocation = await bundle(path.resolve(entry), undefined,
-    {
-      webpackOverride: (currentConfiguration => {
-        return {
-          ...currentConfiguration,
-          module: {
-            ...currentConfiguration.module,
-            rules: [
-              ...(currentConfiguration.module?.rules ? currentConfiguration.module.rules : []).filter(rule => {
-                if (rule === '...') {
-                  return false
-                }
-                if (rule.test?.toString().includes('.css')) {
-                  return false
-                }
-                return true
-              }),
-              {
-                test: /\.css$/i,
-                use: [
-                  'style-loader',
-                  'css-loader',
-                  {
-                    loader: 'postcss-loader',
-                    options: {
-                      postcssOptions: {
-                        plugins: ['postcss-preset-env', 'tailwindcss', 'autoprefixer'],
-                      },
+export const createBundle = async () => await bundle(path.resolve("./src/remotion/index"), undefined,
+  {
+    webpackOverride: (currentConfiguration => {
+      return {
+        ...currentConfiguration,
+        module: {
+          ...currentConfiguration.module,
+          rules: [
+            ...(currentConfiguration.module?.rules ? currentConfiguration.module.rules : []).filter(rule => {
+              if (rule === '...') {
+                return false
+              }
+              if (rule.test?.toString().includes('.css')) {
+                return false
+              }
+              return true
+            }),
+            {
+              test: /\.css$/i,
+              use: [
+                'style-loader',
+                'css-loader',
+                {
+                  loader: 'postcss-loader',
+                  options: {
+                    postcssOptions: {
+                      plugins: ['postcss-preset-env', 'tailwindcss', 'autoprefixer'],
                     },
                   },
-                ],
-              },
-            ],
-          },
-        }
-      })
-    });
+                },
+              ],
+            },
+          ],
+        },
+      }
+    })
+  });
 
-  const inputProps = JSON.parse(await fs.readFile(`./videos/${folder}/script.json`, "utf8"));
+export const tiktokFolder = (tiktok = false) => tiktok ? "tiktok" : "youtube"
 
-  const comps = await getCompositions(bundleLocation, {
+export const renderThumbnail = async (folder: string, tiktok = false) => {
+  console.log("Starting render");
+  const serveUrl = await createBundle()
+  const inputProps = await readJson(folder)
+  const comps = await getCompositions(serveUrl, {
     inputProps: { ...inputProps, tiktok },
   });
-  if (!tiktok) {
-    const imageComposition = comps.find((c) => c.id === config.remotion.still);
-    if (!imageComposition)
-      throw new Error(`No thumbnail composition found.`);
+  const composition = comps.find((c) => c.id === config.remotion.still);
+  if (!composition)
+    throw new Error(`No thumbnail composition found.`);
 
-    const imageOutputLocation = `./videos/${folder}/thumbnail.png`;
-    console.log("Attempting to render:", imageOutputLocation);
-    await renderStill({
-      composition: imageComposition,
-      serveUrl: bundleLocation,
-      output: imageOutputLocation,
-      inputProps,
-    });
-    console.log("Thumbnail rendered:", imageOutputLocation);
-  }
+  const output = `./${config.folderPath}/${folder}/${tiktokFolder(tiktok)}/${config.thumbnail}`;
+  console.log("Attempting to render:", output);
+  await renderStill({
+    composition,
+    serveUrl,
+    output,
+    inputProps,
+  });
+  console.log("Thumbnail rendered:", output);
+  const url = await uploadToBucket(`${folder}/${tiktokFolder(tiktok)}`, config.thumbnail);
+  const newJson: Script = tiktok ?
+    { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, thumbnail: url } } :
+    { ...inputProps, youtubeUpload: { ...inputProps.youtubeUpload, thumbnail: url } }
+  await writeJson(newJson, folder)
+  return url
+};
 
-  const composition = comps.find((c) => c.id === compositionId);
 
-  if (!composition) {
-    throw new Error(`No composition with the ID ${compositionId} found`);
-  }
+export const render = async (folder: string, tiktok = false) => {
+  console.log("Starting render");
+  const serveUrl = await createBundle()
+  const inputProps = await readJson(folder)
+  const comps = await getCompositions(serveUrl, {
+    inputProps: { ...inputProps, tiktok },
+  });
+  const composition = comps.find((c) => c.id === config.remotion.composition);
+  if (!composition)
+    throw new Error(`No thumbnail composition found.`);
 
-  const outputLocation = `./videos/${folder}/${tiktok ? "tiktok.mp4" : "video.mp4"}`;
+  const outputLocation = `./${config.folderPath}/${folder}/${tiktokFolder(tiktok)}/${config.video}`;
   console.log("Attempting to render:", outputLocation);
   let frames = 1;
   await renderMedia({
     composition,
-    serveUrl: bundleLocation,
+    serveUrl,
     codec: "h264",
     outputLocation,
     inputProps,
@@ -87,5 +99,13 @@ export const start = async (folder: string, tiktok = false) => {
     onStart: (data => frames = data.frameCount)
   });
   console.log("Render done!");
+
+  const url = await uploadToBucket(`${folder}/${tiktokFolder(tiktok)}`, config.video);
+
+  const newJson: Script = tiktok ?
+    { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, url: url } } :
+    { ...inputProps, youtubeUpload: { ...inputProps.youtubeUpload, url: url } }
+  await writeJson(newJson, folder)
+  return url
 };
 

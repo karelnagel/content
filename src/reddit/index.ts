@@ -34,19 +34,16 @@ async function getReplies(jsonReplies: any): Promise<Post[]> {
   return returnReplies
 }
 
-export default async function reddit(folder?: string) {
+export default async function reddit(folder: string) {
   console.log("Starting reddit!")
-  const posts = folder ? [folder] : await getTopPostIds(config.reddit.subreddit, config.reddit.posts)
-  for (const post of posts) {
-    const thread = await getThread(post, config.reddit.depth, config.reddit.limit, config.reddit.sort as Sort)
-    const script: Script = {
-      folder: post,
-      title: `${thread.title} (r/${thread.subreddit})`,
-      scenes: [{ type: "reddit", reddit: thread }]
-      // scenes: [{ type: "intro" }, { type: "reddit", reddit: thread }, { type: "outro" }]
-    }
-    await writeJson(script, post, config.reddit.json)
+  const thread = await getThread(folder, config.reddit.depth, config.reddit.limit, config.reddit.sort as Sort)
+  const script: Script = {
+    folder,
+    title: `${thread.title} (r/${thread.subreddit})`,
+    scenes: [{ type: "reddit", reddit: thread }]
+    // scenes: [{ type: "intro" }, { type: "reddit", reddit: thread }, { type: "outro" }]
   }
+  await writeJson(script, folder)
   console.log("Reddit finished!")
-  return posts
+  return folder
 }

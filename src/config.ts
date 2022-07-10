@@ -1,10 +1,12 @@
 
 export const config = {
   folderPath: 'videos',
+  video: "video.mp4",
+  thumbnail: "thumbnail.png",
   bucketName: "content_bucket32",
   reddit: {
     subreddit: 'AskReddit',
-    limit: 15,
+    limit: 20,
     depth: 4,
     sort: 'top',
     posts: 1,

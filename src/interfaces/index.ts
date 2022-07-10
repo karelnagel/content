@@ -11,8 +11,14 @@ export interface Script {
   video?: { url: string, duration: number }
   image?: string
   scenes: Scene[]
-}
+  youtubeUpload?: Upload,
+  tiktokUpload?: Upload
 
+}
+export interface Upload {
+  url?: string,
+  thumbnail?: string,
+}
 export interface User {
   name: string,
   image?: string,

@@ -2,7 +2,7 @@ import fs from 'fs/promises'
 import { config } from './../config.js'
 import { Script } from './../interfaces'
 
-export async function writeJson(object: object, folder: string, file = config.reddit.json): Promise<string> {
+export async function writeJson(object: Script, folder: string, file = config.reddit.json): Promise<string> {
   const fileName = `./${config.folderPath}/${folder}/${file}`
   await makeDirectory(`./${config.folderPath}/${folder}`)
 
