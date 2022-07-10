@@ -2,7 +2,7 @@ import axios from 'axios'
 import { config } from '../config.js'
 import { writeJson } from '../file/index.js'
 import { Post, Script } from '../interfaces'
-
+import { getVideoDurationInSeconds } from 'get-video-duration'
 
 type Sort = "top" | "controversial" | "confidence"
 
@@ -13,9 +13,18 @@ export async function getTopPostIds(subreddit: string, limit: number = 10): Prom
 
 export async function getThread(threadId: string, depth?: number, limit?: number, sort?: Sort): Promise<Post> {
   const result = await axios.get(`https://reddit.com/comments/${threadId}/top.json`, { params: { depth, limit, sort } })
-
   const jsonPost = result.data[0].data.children[0].data
-  const post: Post = { id: jsonPost.id, subreddit: jsonPost.subreddit, body: jsonPost.body, title: jsonPost.title, author: { name: jsonPost.author }, created_utc: jsonPost.created_utc, score: jsonPost.score }
+
+  const hint = jsonPost.post_hint
+  const mediaUrl = jsonPost.media?.reddit_video?.fallback_url || jsonPost.url_overridden_by_dest
+  const mediaType: "video" | "image" | "gif" | undefined = hint.includes("video") ? 'video' : hint.includes("image") ? mediaUrl.includes(".gif") ? "gif" : "image" : undefined
+  const media = mediaUrl && mediaType ? {
+    src: mediaUrl,
+    type: mediaType,
+    duration: mediaType === "video" ? await getVideoDurationInSeconds(mediaUrl) : 3
+  } : undefined
+
+  const post: Post = { id: jsonPost.id, subreddit: jsonPost.subreddit, body: jsonPost.body, title: jsonPost.title, author: { name: jsonPost.author }, created_utc: jsonPost.created_utc, score: jsonPost.score, media }
 
   post.replies = await getReplies(result.data[1].data.children)
 

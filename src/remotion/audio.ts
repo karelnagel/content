@@ -14,7 +14,7 @@ export const getDurations = (scenes: Scene[]) => {
   })
 }
 
-export const getPostDuration = (post: Post): number => {
+export const getPostDuration = (post: Post, recursive = true): number => {
   let length = 0
   if (post.titleDuration) {
     length += post.titleDuration
@@ -22,7 +22,10 @@ export const getPostDuration = (post: Post): number => {
   if (post.bodyDuration) {
     length += post.bodyDuration
   }
-  if (post.replies)
+  if (post.media?.duration) {
+    length += post.media.duration
+  }
+  if (post.replies && recursive)
     for (const reply of post.replies) {
       length += getPostDuration(reply)
     }

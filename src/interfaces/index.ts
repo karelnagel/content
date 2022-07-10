@@ -35,4 +35,9 @@ export interface Post {
   score?: number,
   bodyDuration?: number,
   titleDuration?: number
+  media?:{
+    src: string,
+    type?: 'video' | 'image' | 'gif',
+    duration: number
+  }
 }
