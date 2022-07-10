@@ -4,7 +4,7 @@ import { getCompositions, renderMedia, renderStill } from "@remotion/renderer";
 import fs from "fs/promises"
 import { config } from "../config.js";
 
-export const start = async (folder: string, tiktok = false, maxLength?: number) => {
+export const start = async (folder: string, tiktok = false) => {
   const compositionId = config.remotion.composition;
 
   const entry = "./src/remotion/index";

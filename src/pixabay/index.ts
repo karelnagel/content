@@ -5,8 +5,8 @@ export async function downloadVideo(folder: string, id: string) {
   const script = await readJson(folder)
 
   const result = await axios.get("https://pixabay.com/api/videos/", { params: { key: process.env.PIXABAY, id } })
-  const videos = result.data.hits[0]?.videos
-  script.video = videos?.medium?.url || videos?.small?.url || undefined
+  const data = result.data.hits[0]
+  script.video = { url: data?.videos?.medium?.url || data?.videos?.small?.url || undefined, duration: data.duration }
   await writeJson(script, folder)
 }
 

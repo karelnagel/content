@@ -5,10 +5,10 @@ export interface Scene {
   duration?: number
 }
 export interface Script {
-  tiktok?:boolean
+  tiktok?: boolean
   title: string
   folder: string
-  video?: string
+  video?: { url: string, duration: number }
   image?: string
   scenes: Scene[]
 }

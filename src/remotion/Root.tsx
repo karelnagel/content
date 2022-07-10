@@ -34,7 +34,7 @@ export const Root: React.FC = () => {
       <Composition
         id={`Intro`}
         component={Intro}
-        durationInFrames={secondsToFrames(newScenes.find(s => s.type === 'intro')?.duration)}
+        durationInFrames={secondsToFrames(4)}
         fps={fps}
         width={width}
         height={height}
@@ -43,7 +43,7 @@ export const Root: React.FC = () => {
       <Composition
         id={`Outro`}
         component={Outro}
-        durationInFrames={secondsToFrames(newScenes.find(s => s.type === 'outro')?.duration)}
+        durationInFrames={secondsToFrames(4)}
         fps={fps}
         width={width}
         height={height}

@@ -1,35 +1,21 @@
-import React, { useEffect, useState } from 'react'
-import { AbsoluteFill, getInputProps, Series, Audio, Img, Video, Loop, continueRender, delayRender } from 'remotion'
+import React from 'react'
+import { AbsoluteFill, getInputProps, Series, Audio, Img, Video, Loop } from 'remotion'
 import { Post, Script } from 'src/interfaces'
 import { getPostDuration } from '../audio'
 import { secondsToFrames } from '../Root'
-import { getVideoMetadata } from '@remotion/media-utils'
 import { ImArrowUp, ImArrowDown } from 'react-icons/im'
 
 const { folder } = getInputProps() as Script
 
 const image =
   'https://external-preview.redd.it/_o7PutALILIg2poC9ed67vHQ68Cxx67UT6q7CFAhCs4.png?auto=webp&s=2560c01cc455c9dcbad0d869116c938060e43212'
-export const Reddit: React.FC<{ post?: Post; video?: string }> = ({ post, video }) => {
-  const [videoDuration, setVideoDuration] = useState(1)
-  const [handle] = useState(() => delayRender())
-  useEffect(() => {
-    async function effect() {
-      if (video) {
-        const data = await getVideoMetadata(video)
-        setVideoDuration(data.durationInSeconds)
-      }
-      continueRender(handle)
-    }
-    effect()
-  }, [])
-
+export const Reddit: React.FC<{ post?: Post; video?: { url: string; duration: number } }> = ({ post, video }) => {
   return (
     <>
       <AbsoluteFill className="bg-white">
         {video && (
-          <Loop durationInFrames={secondsToFrames(videoDuration)}>
-            <Video src={video} volume={0} className="object-cover" />
+          <Loop durationInFrames={secondsToFrames(video.duration)}>
+            <Video src={video.url} volume={0} className="object-cover" />
           </Loop>
         )}
       </AbsoluteFill>

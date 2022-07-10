@@ -22,6 +22,7 @@
     "@remotion/bundler": "^3.0.0",
     "@remotion/cli": "^3.0.19",
     "@remotion/eslint-config": "^3.0.0",
+    "@remotion/lambda": "^3.0.29",
     "@remotion/renderer": "^3.0.19",
     "@types/jest": "^27.4.1",
     "@types/node": "^17.0.43",

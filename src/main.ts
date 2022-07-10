@@ -7,6 +7,7 @@ import reddit from './reddit/index.js'
 import { config } from './config.js'
 import { downloadImage, downloadVideo } from './pixabay/index.js'
 import { start } from './remotion/render.js'
+import { render } from './remotion/lambda.js'
 
 export const getFolder = () => process.argv[2]
 export const getProgram = () => process.argv[3] === "all" ? "reddit,tts,remotion,upload,getvideo,getimage" : process.argv[3] === "ready" ? "tts,remotion,upload,getvideo,getimage" : process.argv[3]
@@ -37,10 +38,10 @@ export default async function main() {
     if (process.argv[5]) await downloadImage(folder, process.argv[5])
   }
   if (program.includes("remotion")) {
-    await start(folder)
+    await render(folder)
   }
   if (program.includes("remtik")) {
-    await start(folder, true)
+    await render(folder, true)
   }
 
   if (program.includes("upload")) {
