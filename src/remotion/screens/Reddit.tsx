@@ -8,7 +8,7 @@ import { Gif } from '@remotion/gif'
 
 const { folder } = getInputProps() as Script
 
-const profileImage =
+const defaultImage =
   'https://external-preview.redd.it/_o7PutALILIg2poC9ed67vHQ68Cxx67UT6q7CFAhCs4.png?auto=webp&s=2560c01cc455c9dcbad0d869116c938060e43212'
 export const Reddit: React.FC<{ post?: Post; video?: { url: string; duration: number } }> = ({ post, video }) => {
   return (
@@ -54,8 +54,8 @@ export const RedditPost: React.FC<{ post: Post }> = ({ post }) => {
         </div>
         <div className="flex flex-col space-y-2 justify-start ">
           <div className="flex space-x-3">
-            <Img src={profileImage} className="h-8 w-8 rounded-full" />
-            <p className=" font-bold">r/{post.subreddit}</p>
+            <Img src={post.subreddit?.image || defaultImage} className="h-8 w-8 rounded-full" />
+            <p className=" font-bold">r/{post.subreddit?.name}</p>
             <p>Posted by u/{post.author?.name}</p>
             {/* <p>{post.created_utc}</p> */}
           </div>
@@ -92,7 +92,7 @@ export const RedditComment: React.FC<{ post: Post }> = ({ post }) => {
       <div className="flex flex-col w-full items-stretch">
         <div className="flex flex-col bg-white rounded-xl p-4 m-1 shadow-md space-y-2 ">
           <div className="flex items-center space-x-3">
-            <Img src={profileImage} className="h-12 w-12 rounded-full" />
+            <Img src={post.author?.image || defaultImage} className="h-12 w-12 rounded-full" />
             <p className="text-2xl font-bold">{post.author?.name}</p>
           </div>
           <p className="text-3xl">{post.body}</p>

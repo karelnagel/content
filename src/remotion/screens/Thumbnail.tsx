@@ -17,7 +17,7 @@ export const Thumbnail: React.FC<{ image?: string; scenes: Scene[] }> = ({ image
           <AbsoluteFill className=" flex h-full font-extrabold text-white p-10 font-thumbnail">
             <div className="h-full max-w-7xl flex flex-col ">
               <h3 className="text-6xl">
-                r/<span className="text-blue-500">{post.subreddit}</span>
+                r/<span className="text-blue-500">{post.subreddit?.name}</span>
               </h3>
               <h1 className="m-auto text-9xl leading-tight font-black">{post.title}</h1>
             </div>

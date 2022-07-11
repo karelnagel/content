@@ -27,7 +27,10 @@ export interface User {
 export interface Post {
   id: string,
   author?: User,
-  subreddit?: string,
+  subreddit?: {
+    name: string,
+    image?: string
+  }
   title?: string,
   body?: string,
   replies?: Post[],
@@ -35,7 +38,7 @@ export interface Post {
   score?: number,
   bodyDuration?: number,
   titleDuration?: number
-  media?:{
+  media?: {
     src: string,
     type?: 'video' | 'image' | 'gif',
     duration: number

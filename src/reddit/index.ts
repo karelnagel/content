@@ -24,7 +24,7 @@ export async function getThread(threadId: string, depth?: number, limit?: number
     duration: mediaType === "video" ? await getVideoDurationInSeconds(mediaUrl) : 3
   } : undefined
 
-  const post: Post = { id: jsonPost.id, subreddit: jsonPost.subreddit, body: jsonPost.body, title: jsonPost.title, author: { name: jsonPost.author }, created_utc: jsonPost.created_utc, score: jsonPost.score, media }
+  const post: Post = { id: jsonPost.id, subreddit: { name: jsonPost.subreddit, image: await getRedditImage(jsonPost.subreddit, true) }, body: jsonPost.body, title: jsonPost.title, author: { name: jsonPost.author, image: await getRedditImage(jsonPost.author) }, created_utc: jsonPost.created_utc, score: jsonPost.score, media }
 
   post.replies = await getReplies(result.data[1].data.children)
 
@@ -37,7 +37,7 @@ async function getReplies(jsonReplies: any): Promise<Post[]> {
     if (!jsonReply.author) continue;
 
     const replies = reply.data?.replies?.data?.children ? await getReplies(reply.data.replies.data.children) : []
-    const replyPost: Post = { id: jsonReply.id, body: jsonReply.body, title: jsonReply.title, author: { name: jsonReply.author }, created_utc: jsonReply.created_utc, score: jsonReply.score, replies }
+    const replyPost: Post = { id: jsonReply.id, body: jsonReply.body, title: jsonReply.title, author: { name: jsonReply.author, image: await getRedditImage(jsonReply.author) }, created_utc: jsonReply.created_utc, score: jsonReply.score, replies }
     returnReplies.push(replyPost)
   }
   return returnReplies
@@ -48,11 +48,18 @@ export default async function reddit(folder: string) {
   const thread = await getThread(folder, config.reddit.depth, config.reddit.limit, config.reddit.sort as Sort)
   const script: Script = {
     folder,
-    title: `${thread.title} (r/${thread.subreddit})`,
+    title: `${thread.title} (r/${thread.subreddit?.name})`,
     scenes: [{ type: "reddit", reddit: thread }]
     // scenes: [{ type: "intro" }, { type: "reddit", reddit: thread }, { type: "outro" }]
   }
   await writeJson(script, folder)
   console.log("Reddit finished!")
   return folder
+}
+export async function getRedditImage(name: string, subreddit = false) {
+  const result = !subreddit ?
+    await axios.get(`https://www.reddit.com/user/${name}/about.json`) :
+    await axios.get(`https://www.reddit.com/r/${name}/about.json`)
+  const img = result.data.data.icon_img.replace(/&amp;/g, "&")
+  return img
 }
