@@ -6,7 +6,7 @@ export const config = {
   bucketName: "content_bucket32",
   reddit: {
     subreddit: 'AskReddit',
-    limit: 20,
+    limit: 25,
     depth: 4,
     sort: 'top',
     posts: 1,
@@ -19,7 +19,9 @@ export const config = {
     width: 1920,
     height: 1080,
     introDuration: 2,
-    outroDuration: 2
+    outroDuration: 2,
+    tiktokCommentDuration: 15,
+    tiktokDuration: 60
   },
   gpt: {
     model: 'text-davinci-002', // ['text-ada-001','text-curie-001','text-babbage-001','text-davinci-002'],

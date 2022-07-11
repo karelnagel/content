@@ -34,7 +34,7 @@ async function getReplies(jsonReplies: any): Promise<Post[]> {
   const returnReplies: Post[] = []
   for (const reply of jsonReplies) {
     const jsonReply = reply.data
-    if (!jsonReply.author) continue;
+    if (!jsonReply.author || jsonReply.distinguished==="moderator") continue;
 
     const replies = reply.data?.replies?.data?.children ? await getReplies(reply.data.replies.data.children) : []
     const replyPost: Post = { id: jsonReply.id, body: removeLinks(jsonReply.body), title: removeLinks(jsonReply.title), author: { name: jsonReply.author, image: await getRedditImage(jsonReply.author) }, created_utc: jsonReply.created_utc, score: jsonReply.score, replies }
@@ -49,8 +49,7 @@ export default async function reddit(folder: string) {
   const script: Script = {
     folder,
     title: `${thread.title} (r/${thread.subreddit?.name})`,
-    scenes: [{ type: "reddit", reddit: thread }]
-    // scenes: [{ type: "intro" }, { type: "reddit", reddit: thread }, { type: "outro" }]
+    scenes: [{ type: "reddit", reddit: thread }, { type: "outro" }]
   }
   await writeJson(script, folder)
   console.log("Reddit finished!")

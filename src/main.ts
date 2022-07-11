@@ -9,7 +9,7 @@ import { lambda, lambdaThumbnail } from './remotion/lambda.js'
 import { getLength } from './file/index.js'
 
 export const getParams = () => process.argv[3]
-export const getProgram = () => process.argv[2] === "all" ? ["reddit", "tts", "video", "image", "thumb", "rem", "up", "remtik", "uptik"] :
+export const getProgram = () => process.argv[2] === "all" ? ["reddit", "tts", "video", "image", "lamthumb", "lam", "up", "lamtik", "uptik"] :
   process.argv[2] === "lambda" ? ["reddit", "tts", "video", "image", "lamthumb", "lam", "up", "lamtik", "uptik"] :
     process.argv[2] === "prepare" ? ["reddit", "tts", "video", "image"] :
       process.argv[2] === "youtube" ? ["thumb", "rem", "up"] :

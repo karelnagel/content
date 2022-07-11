@@ -6,9 +6,14 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        thumbnail:["Work Sans", "sans-serif"],
+        thumbnail: ["Work Sans", "sans-serif"],
         sans: ['Graphik', 'sans-serif'],
         serif: ['Merriweather', 'serif'],
+      },
+      fontSize: {
+        "huge": "8rem",
+        "2huge": "18rem",
+        "3huge": "24rem",
       },
       colors: {
         'primary': '#1fb6ff',

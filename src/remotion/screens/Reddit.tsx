@@ -24,12 +24,16 @@ export const Reddit: React.FC<{ post?: Post; video?: { url: string; duration: nu
         {post && (
           <div className="flex flex-col max-w-screen-lg mx-auto h-full w-full p-4 justify-center">
             <Series>
-              <Series.Sequence durationInFrames={secondsToFrames(getPostDuration(post, false))} layout="none">
+              <Series.Sequence durationInFrames={secondsToFrames(getPostDuration(post, false)?.duration)} layout="none">
                 <RedditPost post={post} />
               </Series.Sequence>
               {post.replies &&
                 post.replies.map((reply, i) => (
-                  <Series.Sequence durationInFrames={secondsToFrames(getPostDuration(reply))} layout="none">
+                  <Series.Sequence
+                    key={i}
+                    durationInFrames={secondsToFrames(getPostDuration(reply)?.duration)}
+                    layout="none"
+                  >
                     <div key={i} className="-ml-7">
                       <RedditComment post={reply} />
                     </div>
@@ -107,7 +111,7 @@ export const RedditComment: React.FC<{ post: Post }> = ({ post }) => {
             post.replies.map((reply, i) => (
               <Series.Sequence
                 layout="none"
-                durationInFrames={secondsToFrames(getPostDuration(reply))}
+                durationInFrames={secondsToFrames(getPostDuration(reply)?.duration)}
                 key={i}
                 offset={i === 0 ? secondsToFrames(post.bodyDuration) : 0}
               >

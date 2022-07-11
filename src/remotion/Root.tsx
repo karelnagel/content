@@ -17,7 +17,7 @@ const height = !tiktok ? config.remotion.height : config.remotion.width
 export const secondsToFrames = (seconds?: number) => (seconds ? Math.floor(fps * seconds) : 1)
 
 export const Root: React.FC = () => {
-  const newScenes = getDurations(scenes)
+  const newScenes = getDurations(scenes, tiktok)
   return (
     <>
       <Composition
