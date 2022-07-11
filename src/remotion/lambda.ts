@@ -1,11 +1,13 @@
-import { getRenderProgress, renderMediaOnLambda, renderStillOnLambda } from "@remotion/lambda"
+import { downloadMedia, getRenderProgress, renderMediaOnLambda, renderStillOnLambda } from "@remotion/lambda"
 import { Script } from "../interfaces/index.js";
 import { config } from "../config.js";
 import { readJson, writeJson } from "../file/index.js";
+import { tiktokFolder } from "./render.js";
 
 const serveUrl = process.env.LAMBDA_SERVE_URL ?? ""
 const functionName = process.env.LAMBDA_FUNCTION_NAME ?? ""
-const region = "us-east-1"
+const region = "us-east-2"
+const bucketName = process.env.LAMBDA_BUCKET ?? ""
 
 export const lambdaThumbnail = async (folder: string, tiktok = false) => {
   const inputProps = await readJson(folder)
@@ -19,7 +21,9 @@ export const lambdaThumbnail = async (folder: string, tiktok = false) => {
     imageFormat: "png",
     maxRetries: 1,
     privacy: "public",
-    envVariables: {}
+    envVariables: {},
+    // outName: { key: `${config.folderPath}/${folder}/${tiktokFolder(tiktok)}/video.mp4`, bucketName: process.env.LAMBDA_BUCKET ?? "" }
+
   });
   const newJson: Script = tiktok ?
     { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, thumbnail: url } } :
@@ -31,7 +35,7 @@ export const lambdaThumbnail = async (folder: string, tiktok = false) => {
 export const lambda = async (folder: string, tiktok = false) => {
   const inputProps = await readJson(folder)
 
-  const { bucketName, renderId } = await renderMediaOnLambda({
+  const { renderId } = await renderMediaOnLambda({
     region,
     functionName,
     composition: config.remotion.composition,
@@ -41,8 +45,7 @@ export const lambda = async (folder: string, tiktok = false) => {
     imageFormat: "jpeg",
     maxRetries: 1,
     privacy: "public",
-    // outName: {key:"render.mp4",bucketName:"df"}
-    outName: "video.mp4"
+    outName: { key: `${config.folderPath}/${folder}/${tiktokFolder(tiktok)}/video.mp4`, bucketName }
 
   });
   const getProgress = async () => await getRenderProgress({
@@ -55,16 +58,32 @@ export const lambda = async (folder: string, tiktok = false) => {
 
   while (!progress.done) {
     progress = await getProgress()
-    process.stdout.write(`\rRendering: ${progress.encodingStatus?.framesEncoded}/${progress.encodingStatus?.totalFrames}, ${Math.round((progress.encodingStatus?.framesEncoded || 1) / (progress.encodingStatus?.totalFrames || 1) * 100)}%, ${progress.encodingStatus?.totalFrames || 0 / config.remotion.fps}s, ${progress.costs.displayCost} `)
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    process.stdout.write(`Rendering: ${Math.round(progress.overallProgress * 100)}% ${progress.encodingStatus?.framesEncoded} / ${progress.encodingStatus?.totalFrames} frames, ${progress.costs.displayCost} \r`)
+    if (progress.errors.length > 0) break;
+    await new Promise((resolve) => setTimeout(resolve, 10000));
   }
 
-  if (progress.errors)
-    console.log(`\nErrors: ${progress.errors}`)
-
-  const newJson: Script = tiktok ?
-    { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, url: progress.outputFile ?? undefined } } :
-    { ...inputProps, youtubeUpload: { ...inputProps.youtubeUpload, url: progress.outputFile ?? undefined } }
-  await writeJson(newJson, folder)
+  if (progress.errors.length > 0)
+    console.log(`\nError with rendering: ${progress.errors}`)
+  else {
+    const newJson: Script = tiktok ?
+      { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, url: progress.outputFile ?? undefined } } :
+      { ...inputProps, youtubeUpload: { ...inputProps.youtubeUpload, url: progress.outputFile ?? undefined } }
+    await writeJson(newJson, folder)
+    if (tiktok) await download(folder, renderId)
+    console.log(`\nFinished rendering with ${progress.costs.displayCost}`)
+  }
 };
-
+const download = async (folder: string, renderId: string) => {
+  console.log(`\nDownloading ${folder}`)
+  const { outputPath } = await downloadMedia({
+    bucketName,
+    region,
+    renderId,
+    outPath: `videos/tiktok/${folder}.mp4`,
+    onProgress: ({ percent }) => {
+      process.stdout.write(`Download progress: ${(percent * 100).toFixed(0)}%\r`);
+    },
+  });
+  return outputPath
+}

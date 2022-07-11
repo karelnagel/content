@@ -17,7 +17,7 @@ export async function getThread(threadId: string, depth?: number, limit?: number
 
   const hint = jsonPost.post_hint
   const mediaUrl = jsonPost.media?.reddit_video?.fallback_url || jsonPost.url_overridden_by_dest
-  const mediaType: "video" | "image" | "gif" | undefined = hint.includes("video") ? 'video' : hint.includes("image") ? mediaUrl.includes(".gif") ? "gif" : "image" : undefined
+  const mediaType: "video" | "image" | "gif" | undefined = hint?.includes("video") ? 'video' : hint?.includes("image") ? mediaUrl.includes(".gif") ? "gif" : "image" : undefined
   const media = mediaUrl && mediaType ? {
     src: mediaUrl,
     type: mediaType,

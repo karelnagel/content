@@ -10,7 +10,8 @@
     "format:check": "prettier \"./**\" --ignore-unknown --check",
     "remotion:start": "remotion preview src/remotion/index.tsx --props=./videos/test/script.json",
     "remotion:build": "remotion render src/remotion/index.tsx Video videos/test/video.mp4 --props=./videos/test/script.json",
-    "remotion:upgrade": "remotion upgrade"
+    "remotion:upgrade": "remotion upgrade",
+    "lambda:site":"npx remotion lambda sites create src/remotion/index.tsx --site-name=my-project"
   },
   "dependencies": {
     "@commitlint/cli": "^16.2.3",
