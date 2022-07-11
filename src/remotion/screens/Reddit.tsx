@@ -1,5 +1,5 @@
 import React from 'react'
-import { AbsoluteFill, getInputProps, Series, Audio, Img, Video, Loop, Sequence } from 'remotion'
+import { AbsoluteFill, getInputProps, Series, Audio, Img, Video, Loop, Freeze } from 'remotion'
 import { Post, Script } from 'src/interfaces'
 import { getPostDuration } from '../audio'
 import { secondsToFrames } from '../Root'
@@ -65,14 +65,17 @@ export const RedditPost: React.FC<{ post: Post }> = ({ post }) => {
             {post.media?.type === 'image' && <Img src={post.media.src} className="object-contain h-full " />}
             {post.media?.type === 'gif' && <Gif src={post.media.src} fit="contain" style={{ height: '100%' }} />}
             {post.media?.type === 'video' && (
-              <Sequence
-                from={secondsToFrames(post.titleDuration)}
-                durationInFrames={secondsToFrames(post.media.duration)}
-                layout="none"
-              >
-                <Video src={post.media.src} className="object-contain h-full" />
-                <Audio src={`${post.media.src.split('DASH')[0]}DASH_audio.mp4`} />
-              </Sequence>
+              <Series>
+                <Series.Sequence durationInFrames={secondsToFrames(post.titleDuration)} layout="none">
+                  <Freeze frame={0}>
+                    <Video src={post.media.src} className="object-contain h-full" />
+                  </Freeze>
+                </Series.Sequence>
+                <Series.Sequence durationInFrames={secondsToFrames(post.media.duration)} layout="none">
+                  <Video src={post.media.src} className="object-contain h-full" />
+                  <Audio src={`${post.media.src.split('DASH')[0]}DASH_audio.mp4`} />
+                </Series.Sequence>
+              </Series>
             )}
           </div>
         </div>
