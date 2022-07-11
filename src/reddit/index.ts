@@ -24,7 +24,7 @@ export async function getThread(threadId: string, depth?: number, limit?: number
     duration: mediaType === "video" ? await getVideoDurationInSeconds(mediaUrl) : 3
   } : undefined
 
-  const post: Post = { id: jsonPost.id, subreddit: { name: jsonPost.subreddit, image: await getRedditImage(jsonPost.subreddit, true) }, body: jsonPost.body, title: jsonPost.title, author: { name: jsonPost.author, image: await getRedditImage(jsonPost.author) }, created_utc: jsonPost.created_utc, score: jsonPost.score, media }
+  const post: Post = { id: jsonPost.id, subreddit: { name: jsonPost.subreddit, image: await getRedditImage(jsonPost.subreddit, true) }, body: removeLinks(jsonPost.body), title: removeLinks(jsonPost.title), author: { name: jsonPost.author, image: await getRedditImage(jsonPost.author) }, created_utc: jsonPost.created_utc, score: jsonPost.score, media }
 
   post.replies = await getReplies(result.data[1].data.children)
 
@@ -37,7 +37,7 @@ async function getReplies(jsonReplies: any): Promise<Post[]> {
     if (!jsonReply.author) continue;
 
     const replies = reply.data?.replies?.data?.children ? await getReplies(reply.data.replies.data.children) : []
-    const replyPost: Post = { id: jsonReply.id, body: jsonReply.body, title: jsonReply.title, author: { name: jsonReply.author, image: await getRedditImage(jsonReply.author) }, created_utc: jsonReply.created_utc, score: jsonReply.score, replies }
+    const replyPost: Post = { id: jsonReply.id, body: removeLinks(jsonReply.body), title: removeLinks(jsonReply.title), author: { name: jsonReply.author, image: await getRedditImage(jsonReply.author) }, created_utc: jsonReply.created_utc, score: jsonReply.score, replies }
     returnReplies.push(replyPost)
   }
   return returnReplies
@@ -62,4 +62,12 @@ export async function getRedditImage(name: string, subreddit = false) {
     await axios.get(`https://www.reddit.com/r/${name}/about.json`)
   const img = result.data.data.icon_img.replace(/&amp;/g, "&")
   return img
+}
+
+export function removeLinks(str: string) {
+  if (!str) return str
+  const tags = str.match(/\[.*?(?=\]\((.*?)\))/g)?.map(x => x.substring(1)) ?? [];
+  const newString = str.replace(/\[.*?\]\(.*?\)/g, () => tags.shift() ?? "");
+
+  return newString
 }
