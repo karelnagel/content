@@ -17,14 +17,19 @@ export async function getThread(threadId: string, depth?: number, limit?: number
 
   const hint = jsonPost.post_hint
   const mediaUrl = jsonPost.media?.reddit_video?.fallback_url || jsonPost.url_overridden_by_dest
-  const mediaType: "video" | "image" | "gif" | undefined = hint?.includes("video") ? 'video' : hint?.includes("image") ? mediaUrl.includes(".gif") ? "gif" : "image" : undefined
+
+  const mediaType: "video" | "videoNoAudio" | "image" | "gif" | undefined =
+    hint?.includes("video") ?
+      jsonPost.media?.reddit_video?.is_gif ? 'videoNoAudio' : 'video' :
+      hint?.includes("image") ? mediaUrl.includes(".gif") ? "gif" : "image" : undefined
+
   const media = mediaUrl && mediaType ? {
     src: mediaUrl,
     type: mediaType,
-    duration: mediaType === "video" ? await getVideoDurationInSeconds(mediaUrl) : 3
+    duration: mediaType.includes("video") ? await getVideoDurationInSeconds(mediaUrl) : 3
   } : undefined
 
-  const post: Post = { id: jsonPost.id, subreddit: { name: jsonPost.subreddit, image: await getRedditImage(jsonPost.subreddit, true) }, body: removeLinks(jsonPost.body), title: removeLinks(jsonPost.title), author: { name: jsonPost.author, image: await getRedditImage(jsonPost.author) }, created_utc: jsonPost.created_utc, score: jsonPost.score, media }
+  const post: Post = { id: jsonPost.id, subreddit: { name: jsonPost.subreddit, image: await getRedditImage(jsonPost.subreddit, true) }, title: { text: removeLinks(jsonPost.title) }, author: { name: jsonPost.author, image: await getRedditImage(jsonPost.author) }, created_utc: jsonPost.created_utc, score: jsonPost.score, media }
 
   post.replies = await getReplies(result.data[1].data.children)
 
@@ -34,10 +39,10 @@ async function getReplies(jsonReplies: any): Promise<Post[]> {
   const returnReplies: Post[] = []
   for (const reply of jsonReplies) {
     const jsonReply = reply.data
-    if (!jsonReply.author || jsonReply.distinguished==="moderator") continue;
+    if (!jsonReply.author || jsonReply.distinguished === "moderator") continue;
 
     const replies = reply.data?.replies?.data?.children ? await getReplies(reply.data.replies.data.children) : []
-    const replyPost: Post = { id: jsonReply.id, body: removeLinks(jsonReply.body), title: removeLinks(jsonReply.title), author: { name: jsonReply.author, image: await getRedditImage(jsonReply.author) }, created_utc: jsonReply.created_utc, score: jsonReply.score, replies }
+    const replyPost: Post = { id: jsonReply.id, body: { text: removeLinks(jsonReply.body) }, author: { name: jsonReply.author, image: await getRedditImage(jsonReply.author) }, created_utc: jsonReply.created_utc, score: jsonReply.score, replies }
     returnReplies.push(replyPost)
   }
   return returnReplies
@@ -48,7 +53,7 @@ export default async function reddit(folder: string) {
   const thread = await getThread(folder, config.reddit.depth, config.reddit.limit, config.reddit.sort as Sort)
   const script: Script = {
     folder,
-    title: `${thread.title} (r/${thread.subreddit?.name})`,
+    title: `${thread.title?.text} (r/${thread.subreddit?.name})`,
     scenes: [{ type: "reddit", reddit: thread }, { type: "outro" }]
   }
   await writeJson(script, folder)

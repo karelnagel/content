@@ -19,7 +19,7 @@ export const Thumbnail: React.FC<{ image?: string; scenes: Scene[] }> = ({ image
               <h3 className="text-6xl">
                 r/<span className="text-blue-500">{post.subreddit?.name}</span>
               </h3>
-              <h1 className="m-auto text-9xl leading-tight font-black">{post.title}</h1>
+              <h1 className="m-auto text-9xl leading-tight font-black">{post.title?.text}</h1>
             </div>
           </AbsoluteFill>
         </div>

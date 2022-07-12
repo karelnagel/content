@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import 'dotenv/config'
 import { post } from './upload/index.js'
-import { startToSpeech } from './google/index.js'
 import reddit from './reddit/index.js'
 import { downloadImage, downloadVideo } from './pixabay/index.js'
 import { render, renderThumbnail } from './remotion/render.js'
 import { lambda, lambdaThumbnail } from './remotion/lambda.js'
 import { getLength } from './file/index.js'
+import { startToSpeech } from './amazon/index.js'
 
 export const getParams = () => process.argv[3]
 export const getProgram = () => process.argv[2] === "all" ? ["reddit", "tts", "video", "image", "lamthumb", "lam", "up", "lamtik", "uptik"] :

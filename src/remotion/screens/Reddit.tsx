@@ -1,12 +1,10 @@
 import React from 'react'
-import { AbsoluteFill, getInputProps, Series, Audio, Img, Video, Loop, Freeze } from 'remotion'
-import { Post, Script } from 'src/interfaces'
+import { AbsoluteFill, Series, Audio, Img, Video, Loop, Freeze } from 'remotion'
+import { Post } from 'src/interfaces'
 import { getPostDuration } from '../audio'
 import { secondsToFrames } from '../Root'
 import { ImArrowUp, ImArrowDown } from 'react-icons/im'
 import { Gif } from '@remotion/gif'
-
-const { folder } = getInputProps() as Script
 
 const defaultImage =
   'https://external-preview.redd.it/_o7PutALILIg2poC9ed67vHQ68Cxx67UT6q7CFAhCs4.png?auto=webp&s=2560c01cc455c9dcbad0d869116c938060e43212'
@@ -64,27 +62,29 @@ export const RedditPost: React.FC<{ post: Post }> = ({ post }) => {
             {/* <p>{post.created_utc}</p> */}
           </div>
 
-          <h2 className=" font-bold text-4xl">{post.title}</h2>
+          <h2 className=" font-bold text-4xl">{post.title?.text}</h2>
           <div className="h-96" style={{ height: '45rem' }}>
             {post.media?.type === 'image' && <Img src={post.media.src} className="object-contain h-full " />}
             {post.media?.type === 'gif' && <Gif src={post.media.src} fit="contain" style={{ height: '100%' }} />}
-            {post.media?.type === 'video' && (
+            {post.media?.type?.includes('video') && (
               <Series>
-                <Series.Sequence durationInFrames={secondsToFrames(post.titleDuration)} layout="none">
+                <Series.Sequence durationInFrames={secondsToFrames(post.title?.duration)} layout="none">
                   <Freeze frame={0}>
                     <Video src={post.media.src} className="object-contain h-full" />
                   </Freeze>
                 </Series.Sequence>
                 <Series.Sequence durationInFrames={secondsToFrames(post.media.duration)} layout="none">
                   <Video src={post.media.src} className="object-contain h-full" />
-                  <Audio src={`${post.media.src.split('DASH')[0]}DASH_audio.mp4`} />
+                  {post.media.type !== 'videoNoAudio' && (
+                    <Audio src={`${post.media.src.split('DASH')[0]}DASH_audio.mp4`} />
+                  )}
                 </Series.Sequence>
               </Series>
             )}
           </div>
         </div>
       </div>
-      <Audio src={require(`./../../../videos/${folder}/audio/${post.id}_title.mp3`)} />
+      <Audio src={post.title?.url} />
     </>
   )
 }
@@ -99,7 +99,7 @@ export const RedditComment: React.FC<{ post: Post }> = ({ post }) => {
             <Img src={post.author?.image || defaultImage} className="h-12 w-12 rounded-full" />
             <p className="text-2xl font-bold">{post.author?.name}</p>
           </div>
-          <p className="text-3xl">{post.body}</p>
+          <p className="text-3xl">{post.body?.text}</p>
           <div className="flex space-x-2 items-center">
             <ImArrowUp className="text-2xl" />
             <p className=" font-bold text-2xl">{formatNumber(post.score ?? 0)}</p>
@@ -113,13 +113,13 @@ export const RedditComment: React.FC<{ post: Post }> = ({ post }) => {
                 layout="none"
                 durationInFrames={secondsToFrames(getPostDuration(reply)?.duration)}
                 key={i}
-                offset={i === 0 ? secondsToFrames(post.bodyDuration) : 0}
+                offset={i === 0 ? secondsToFrames(post.body?.duration) : 0}
               >
                 <RedditComment post={reply} />
               </Series.Sequence>
             ))}
         </Series>
-        <Audio src={require(`./../../../videos/${folder}/audio/${post.id}_body.mp3`)} />
+        <Audio src={post.body?.url} />
       </div>
     </div>
   )

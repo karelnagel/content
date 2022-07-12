@@ -20,11 +20,11 @@ export const readJson = async (folder: string, file = config.reddit.json): Promi
 
  const getPostDuration = (post: Post, recursive = true): number => {
   let length = 0
-  if (post.titleDuration) {
-    length += post.titleDuration
+  if (post.title?.duration) {
+    length += post.title.duration
   }
-  if (post.bodyDuration) {
-    length += post.bodyDuration
+  if (post.body?.duration) {
+    length += post.body.duration
   }
   if (post.media?.duration) {
     length += post.media.duration

@@ -11,9 +11,10 @@
     "remotion:start": "remotion preview src/remotion/index.tsx --props=./videos/test/script.json",
     "remotion:build": "remotion render src/remotion/index.tsx Video videos/test/video.mp4 --props=./videos/test/script.json",
     "remotion:upgrade": "remotion upgrade",
-    "lambda:site":"npx remotion lambda sites create src/remotion/index.tsx --site-name=my-project"
+    "lambda:site": "npx remotion lambda sites create src/remotion/index.tsx --site-name=my-project --region us-east-2"
   },
   "dependencies": {
+    "@aws-sdk/client-polly": "^3.127.0",
     "@commitlint/cli": "^16.2.3",
     "@commitlint/config-conventional": "^16.2.1",
     "@google-cloud/storage": "^6.2.2",

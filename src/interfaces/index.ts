@@ -31,16 +31,19 @@ export interface Post {
     name: string,
     image?: string
   }
-  title?: string,
-  body?: string,
+  title?: Text
+  body?: Text
   replies?: Post[],
   created_utc?: number,
   score?: number,
-  bodyDuration?: number,
-  titleDuration?: number
   media?: {
     src: string,
-    type?: 'video' | 'image' | 'gif',
+    type?: 'video' | 'videoNoAudio' | 'image' | 'gif',
     duration: number
   }
+}
+export interface Text {
+  text: string,
+  url?: string,
+  duration?: number
 }

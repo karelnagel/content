@@ -61,12 +61,12 @@ export const getDurations = (scenes: Scene[], tiktok = false): Scene[] => {
 export const getPostDuration = (reddit: Post, recursive = true, tiktok = false): { duration: number, reddit: Post } | null => {
   let duration = 0
   const replies: Post[] = []
-  if (reddit.bodyDuration) {
-    if (tiktok && reddit.bodyDuration > config.remotion.tiktokCommentDuration) return null
-    duration += reddit.bodyDuration
+  if (reddit.body?.duration) {
+    if (tiktok && reddit.body.duration > config.remotion.tiktokCommentDuration) return null
+    duration += reddit.body.duration
   }
-  if (reddit.titleDuration) {
-    duration += reddit.titleDuration
+  if (reddit.title?.duration) {
+    duration += reddit.title.duration
   }
   if (reddit.media?.duration) {
     duration += reddit.media.duration

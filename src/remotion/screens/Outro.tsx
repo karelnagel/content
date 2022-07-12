@@ -18,7 +18,7 @@ export const Outro: React.FC = () => {
     <>
       <AbsoluteFill className="flex flex-col w-full h-full justify-around items-center bg-white text-8xl py-72 font-thumbnail bg-gradient-to-tr to-blue-500 from-green-400 text-white">
         <h1 className="">Longer Video On: </h1>
-        <div className="flex items-center flex-col" style={{ transform: `scale(${scale})` }}>
+        <div className="flex items-center flex-col mb-20 mt-10" style={{ transform: `scale(${scale})` }}>
           <AiFillYoutube className="text-red-500 text-2huge" />
           <h2 className="font-bold text-huge ">Elom Musd</h2>
         </div>
