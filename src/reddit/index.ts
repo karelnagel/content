@@ -64,7 +64,7 @@ export async function getRedditImage(name: string, subreddit = false) {
   const result = !subreddit ?
     await axios.get(`https://www.reddit.com/user/${name}/about.json`) :
     await axios.get(`https://www.reddit.com/r/${name}/about.json`)
-  const img = result.data.data.icon_img.replace(/&amp;/g, "&")
+  const img = result.data?.data?.icon_img?.replace(/&amp;/g, "&")
   return img
 }
 

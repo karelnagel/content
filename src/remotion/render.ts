@@ -3,7 +3,7 @@ import { bundle } from "@remotion/bundler";
 import { getCompositions, renderMedia, renderStill } from "@remotion/renderer";
 import { config } from "../config.js";
 import { readJson, writeJson } from "../file/index.js";
-import { uploadToBucket } from "../upload/index.js";
+// import { uploadToBucket } from "../upload/index.js";
 import { Script } from "../interfaces/index.js";
 
 export const createBundle = async () => await bundle(path.resolve("./src/remotion/index"), undefined,
@@ -66,7 +66,8 @@ export const renderThumbnail = async (folder: string, tiktok = false) => {
     inputProps,
   });
   console.log("Thumbnail rendered:", output);
-  const url = await uploadToBucket(`${folder}/${tiktokFolder(tiktok)}`, config.thumbnail);
+  const url = "change to aws s3"
+  // const url = await uploadToBucket(`${folder}/${tiktokFolder(tiktok)}`, config.thumbnail);
   const newJson: Script = tiktok ?
     { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, thumbnail: url } } :
     { ...inputProps, youtubeUpload: { ...inputProps.youtubeUpload, thumbnail: url } }
@@ -100,7 +101,8 @@ export const render = async (folder: string, tiktok = false) => {
   });
   console.log("Render done!");
 
-  const url = await uploadToBucket(`${folder}/${tiktokFolder(tiktok)}`, config.video);
+  // const url = await uploadToBucket(`${folder}/${tiktokFolder(tiktok)}`, config.video);
+  const url = "change url to aws"
 
   const newJson: Script = tiktok ?
     { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, url: url } } :

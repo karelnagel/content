@@ -70,7 +70,7 @@ export default async function main() {
           await post(folder)
           break;
         case "uptik":
-          await post(folder, ["tiktok"], true)
+          await post(folder, true)
           break;
         default:
           console.log(`${program} is not a valid program`)

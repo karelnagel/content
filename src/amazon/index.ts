@@ -18,7 +18,7 @@ export async function startToSpeech(folder: string) {
   }
 
   console.log(`Waiting 30 seconds for Polly to finish...`)
-  await new Promise(resolve => setTimeout(resolve, 30000))
+  await new Promise(resolve => setTimeout(resolve, 60000))
   console.log(`Polly finished.`)
 
   const scenesWithDurations: Scene[] = []

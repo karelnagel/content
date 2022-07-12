@@ -63,25 +63,27 @@ export const RedditPost: React.FC<{ post: Post }> = ({ post }) => {
           </div>
 
           <h2 className=" font-bold text-4xl">{post.title?.text}</h2>
-          <div className="h-96" style={{ height: '45rem' }}>
-            {post.media?.type === 'image' && <Img src={post.media.src} className="object-contain h-full " />}
-            {post.media?.type === 'gif' && <Gif src={post.media.src} fit="contain" style={{ height: '100%' }} />}
-            {post.media?.type?.includes('video') && (
-              <Series>
-                <Series.Sequence durationInFrames={secondsToFrames(post.title?.duration)} layout="none">
-                  <Freeze frame={0}>
+          {post.media && (
+            <div className="h-96" style={{ height: '45rem' }}>
+              {post.media?.type === 'image' && <Img src={post.media.src} className="object-contain h-full " />}
+              {post.media?.type === 'gif' && <Gif src={post.media.src} fit="contain" style={{ height: '100%' }} />}
+              {post.media?.type?.includes('video') && (
+                <Series>
+                  <Series.Sequence durationInFrames={secondsToFrames(post.title?.duration)} layout="none">
+                    <Freeze frame={0}>
+                      <Video src={post.media.src} className="object-contain h-full" />
+                    </Freeze>
+                  </Series.Sequence>
+                  <Series.Sequence durationInFrames={secondsToFrames(post.media.duration)} layout="none">
                     <Video src={post.media.src} className="object-contain h-full" />
-                  </Freeze>
-                </Series.Sequence>
-                <Series.Sequence durationInFrames={secondsToFrames(post.media.duration)} layout="none">
-                  <Video src={post.media.src} className="object-contain h-full" />
-                  {post.media.type !== 'videoNoAudio' && (
-                    <Audio src={`${post.media.src.split('DASH')[0]}DASH_audio.mp4`} />
-                  )}
-                </Series.Sequence>
-              </Series>
-            )}
-          </div>
+                    {post.media.type !== 'videoNoAudio' && (
+                      <Audio src={`${post.media.src.split('DASH')[0]}DASH_audio.mp4`} />
+                    )}
+                  </Series.Sequence>
+                </Series>
+              )}
+            </div>
+          )}
         </div>
       </div>
       <Audio src={post.title?.url} />

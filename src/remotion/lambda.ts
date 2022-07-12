@@ -64,17 +64,17 @@ export const lambda = async (folder: string, tiktok = false) => {
   }
 
   if (progress.errors.length > 0)
-    console.log(`\nError with rendering: ${progress.errors}`)
+    console.log(`\nError with rendering: ${JSON.stringify(progress.errors)}`)
   else {
     const newJson: Script = tiktok ?
       { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, url: progress.outputFile ?? undefined } } :
       { ...inputProps, youtubeUpload: { ...inputProps.youtubeUpload, url: progress.outputFile ?? undefined } }
     await writeJson(newJson, folder)
-    if (tiktok) await download(folder, renderId)
+    // if (tiktok) await download(folder, renderId)
     console.log(`\nFinished rendering with ${progress.costs.displayCost}`)
   }
 };
-const download = async (folder: string, renderId: string) => {
+export const download = async (folder: string, renderId: string) => {
   console.log(`\nDownloading ${folder}`)
   const { outputPath } = await downloadMedia({
     bucketName,
