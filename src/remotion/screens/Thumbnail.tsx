@@ -2,7 +2,7 @@ import React from 'react'
 import { AbsoluteFill, Img } from 'remotion'
 import { Scene } from 'src/interfaces'
 
-export const Thumbnail: React.FC<{ image?: string; scenes: Scene[] }> = ({ image, scenes }) => {
+export const Thumbnail: React.FC<{ image?: { url: string; id: string }; scenes: Scene[] }> = ({ image, scenes }) => {
   const post = scenes.find(s => s.type === 'reddit')?.reddit
   return (
     <>
@@ -11,7 +11,7 @@ export const Thumbnail: React.FC<{ image?: string; scenes: Scene[] }> = ({ image
           <AbsoluteFill className="bg-black">
             <div className="relative h-full max-w-5xl ml-auto">
               <div className=" absolute h-full w-full max-w-2xl bg-gradient-to-r from-black to-transparent"></div>
-              {image && <Img src={image} className="object-cover h-full w-full border-0" />}
+              {image?.url && <Img src={image.url} className="object-cover h-full w-full border-0" />}
             </div>
           </AbsoluteFill>
           <AbsoluteFill className=" flex h-full font-extrabold text-white p-10 font-thumbnail">

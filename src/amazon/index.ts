@@ -5,7 +5,7 @@ import { config } from "../config.js";
 
 import { getAudioDurationInSeconds } from 'get-audio-duration'
 
-const region = process.env.LAMBDA_REGION; //e.g. "us-east-1"
+const region = process.env.LAMBDA_REGION;
 const pollyClient = new PollyClient({ region });
 
 
@@ -16,10 +16,6 @@ export async function startToSpeech(folder: string) {
     if (!scene.reddit) scenes.push(scene)
     else scenes.push({ ...scene, reddit: await RedditToSpeech(scene.reddit, folder) })
   }
-
-  console.log(`Waiting 30 seconds for Polly to finish...`)
-  await new Promise(resolve => setTimeout(resolve, 60000))
-  console.log(`Polly finished.`)
 
   const scenesWithDurations: Scene[] = []
   for (const scene of scenes) {
@@ -43,10 +39,22 @@ export async function RedditToSpeech(post: Post, folder: string) {
   }
   return newPost
 }
+export async function getDuration(text: string) {
+  let duration: number | null = null
+  while (!duration) {
+    try {
+      duration = await getAudioDurationInSeconds(text)
+    }
+    catch {
+      await new Promise(resolve => setTimeout(resolve, 5000))
+    }
+  }
+  return Math.ceil(duration)
+}
 export async function getPostDurations(post: Post, folder: string) {
   const newPost = post
-  if (newPost.title?.url) newPost.title.duration = Math.ceil(await getAudioDurationInSeconds(newPost.title.url))
-  if (newPost.body?.url) newPost.body.duration = Math.ceil(await getAudioDurationInSeconds(newPost.body.url))
+  if (newPost.title?.url) newPost.title.duration = await getDuration(newPost.title.url)
+  if (newPost.body?.url) newPost.body.duration = await getDuration(newPost.body.url)
   if (newPost.replies) {
     const replies: Post[] = []
     for (const reply of newPost.replies) {
@@ -68,7 +76,8 @@ export const polly = async (folder: string, text: string) => {
     TextType: "text",
     VoiceId: "Matthew",
     SampleRate: "22050",
-    OutputS3KeyPrefix: prefix
+    OutputS3KeyPrefix: prefix,
+    // Engine: "neural"
   };
   try {
     const data = await pollyClient.send(

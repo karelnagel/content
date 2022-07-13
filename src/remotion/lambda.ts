@@ -6,7 +6,7 @@ import { tiktokFolder } from "./render.js";
 
 const serveUrl = process.env.LAMBDA_SERVE_URL ?? ""
 const functionName = process.env.LAMBDA_FUNCTION_NAME ?? ""
-const region = "us-east-2"
+const region = process.env.LAMBDA_REGION === "us-east-1" ? "us-east-1" : "us-east-2"
 const bucketName = process.env.LAMBDA_BUCKET ?? ""
 
 export const lambdaThumbnail = async (folder: string, tiktok = false) => {
@@ -28,13 +28,13 @@ export const lambdaThumbnail = async (folder: string, tiktok = false) => {
   const newJson: Script = tiktok ?
     { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, thumbnail: url } } :
     { ...inputProps, youtubeUpload: { ...inputProps.youtubeUpload, thumbnail: url } }
+  console.log(`Thumbnail: ${url}`)
   await writeJson(newJson, folder)
 };
 
 
 export const lambda = async (folder: string, tiktok = false) => {
   const inputProps = await readJson(folder)
-
   const { renderId } = await renderMediaOnLambda({
     region,
     functionName,
@@ -58,6 +58,7 @@ export const lambda = async (folder: string, tiktok = false) => {
 
   while (!progress.done) {
     progress = await getProgress()
+    console.log(progress)
     process.stdout.write(`Rendering: ${Math.round(progress.overallProgress * 100)}% ${progress.encodingStatus?.framesEncoded} / ${progress.encodingStatus?.totalFrames} frames, ${progress.costs.displayCost} \r`)
     if (progress.errors.length > 0) break;
     await new Promise((resolve) => setTimeout(resolve, 10000));

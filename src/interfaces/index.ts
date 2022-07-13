@@ -8,8 +8,8 @@ export interface Script {
   tiktok?: boolean
   title: string
   folder: string
-  video?: { url: string, duration: number }
-  image?: string
+  video?: {id:string, url: string, duration: number }
+  image?: {id:string, url: string }
   scenes: Scene[]
   youtubeUpload?: Upload,
   tiktokUpload?: Upload

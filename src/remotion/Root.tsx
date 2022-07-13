@@ -38,7 +38,7 @@ export const Root: React.FC = () => {
         fps={fps}
         width={width}
         height={height}
-        defaultProps={{}}
+        defaultProps={{image}}
       />
       <Composition
         id={`Outro`}
@@ -47,7 +47,7 @@ export const Root: React.FC = () => {
         fps={fps}
         width={width}
         height={height}
-        defaultProps={{}}
+        defaultProps={{image}}
       />
       <Composition
         id={`Reddit`}
