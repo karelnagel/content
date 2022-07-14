@@ -11,29 +11,35 @@ export async function getTopPostIds(subreddit: string, limit: number = 10): Prom
   return result.data.data.children.map((post: any) => post.data.id)
 }
 
-export async function getThread(threadId: string, depth?: number, limit?: number, sort?: Sort): Promise<Post> {
-  const result = await axios.get(`https://reddit.com/comments/${threadId}/top.json`, { params: { depth, limit, sort } })
-  const jsonPost = result.data[0].data.children[0].data
+export async function getThread(threadId: string, depth?: number, limit?: number, sort?: Sort): Promise<Post | undefined> {
+  try {
+    const result = await axios.get(`https://reddit.com/comments/${threadId}/top.json`, { params: { depth, limit, sort } })
+    const jsonPost = result.data[0].data.children[0].data
 
-  const hint = jsonPost.post_hint
-  const mediaUrl = jsonPost.media?.reddit_video?.fallback_url || jsonPost.url_overridden_by_dest
+    const hint = jsonPost.post_hint
+    const mediaUrl = jsonPost.media?.reddit_video?.fallback_url || jsonPost.url_overridden_by_dest
 
-  const mediaType: "video" | "videoNoAudio" | "image" | "gif" | undefined =
-    hint?.includes("video") ?
-      jsonPost.media?.reddit_video?.is_gif ? 'videoNoAudio' : 'video' :
-      hint?.includes("image") ? mediaUrl.includes(".gif") ? "gif" : "image" : undefined
+    const mediaType: "video" | "videoNoAudio" | "image" | "gif" | undefined =
+      hint?.includes("video") ?
+        jsonPost.media?.reddit_video?.is_gif ? 'videoNoAudio' : 'video' :
+        hint?.includes("image") ? mediaUrl.includes(".gif") ? "gif" : "image" : undefined
 
-  const media = mediaUrl && mediaType ? {
-    src: mediaUrl,
-    type: mediaType,
-    duration: mediaType.includes("video") ? await getVideoDurationInSeconds(mediaUrl) : 3
-  } : undefined
+    const media = mediaUrl && mediaType ? {
+      src: mediaUrl,
+      type: mediaType,
+      duration: mediaType.includes("video") ? await getVideoDurationInSeconds(mediaUrl) : 3
+    } : undefined
 
-  const post: Post = { id: jsonPost.id, subreddit: { name: jsonPost.subreddit, image: await getRedditImage(jsonPost.subreddit, true) }, title: { text: removeLinks(jsonPost.title) }, author: { name: jsonPost.author, image: await getRedditImage(jsonPost.author) }, created_utc: jsonPost.created_utc, score: jsonPost.score, media }
+    const post: Post = { id: jsonPost.id, subreddit: { name: jsonPost.subreddit, image: await getRedditImage(jsonPost.subreddit, true) }, title: { text: removeLinks(jsonPost.title) }, author: { name: jsonPost.author, image: await getRedditImage(jsonPost.author) }, created_utc: jsonPost.created_utc, score: jsonPost.score, media }
 
-  post.replies = await getReplies(result.data[1].data.children)
+    post.replies = await getReplies(result.data[1].data.children)
 
-  return post
+    return post
+  }
+  catch (e) {
+    console.log(e)
+    return undefined
+  }
 }
 async function getReplies(jsonReplies: any): Promise<Post[]> {
   const returnReplies: Post[] = []
@@ -51,6 +57,10 @@ async function getReplies(jsonReplies: any): Promise<Post[]> {
 export default async function reddit(folder: string) {
   console.log("Starting reddit!")
   const thread = await getThread(folder, config.reddit.depth, config.reddit.limit, config.reddit.sort as Sort)
+  if (!thread) {
+    console.log("error gettting thread")
+    return
+  }
   const script: Script = {
     folder,
     title: `${thread.title?.text} (r/${thread.subreddit?.name})`,
@@ -61,11 +71,14 @@ export default async function reddit(folder: string) {
   return folder
 }
 export async function getRedditImage(name: string, subreddit = false) {
-  const result = !subreddit ?
-    await axios.get(`https://www.reddit.com/user/${name}/about.json`) :
-    await axios.get(`https://www.reddit.com/r/${name}/about.json`)
-  const img = result.data?.data?.icon_img?.replace(/&amp;/g, "&")
-  return img
+  try {
+    const result = await axios.get(`https://www.reddit.com/${subreddit ? "r" : "user"}/${name}/about.json`)
+    const img = result.data?.data?.icon_img?.replace(/&amp;/g, "&")
+    return img
+  }
+  catch {
+    return undefined
+  }
 }
 
 export function removeLinks(str: string) {

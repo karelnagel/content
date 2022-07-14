@@ -10,11 +10,11 @@ import { startToSpeech } from './amazon/index.js'
 
 export const getParams = () => process.argv[3]
 export const getProgram = () => process.argv[2] === "all" ? ["reddit", "tts", "video", "image", "lamthumb", "lam", "up", "lamtik", "uptik"] :
-  process.argv[2] === "lambda" ? ["reddit", "tts", "video", "image", "lamthumb", "lam", "up", "lamtik", "uptik"] :
-    process.argv[2] === "prepare" ? ["reddit", "tts", "video", "image"] :
-      process.argv[2] === "youtube" ? ["thumb", "rem", "up"] :
-        process.argv[2] === "tiktok" ? ["remtik", "uptik"] :
-          process.argv[2].split(",")
+  process.argv[2] === "prepare" ? ["reddit", "tts", "video", "image"] :
+    process.argv[2] === "youtube" ? ["thumb", "rem", "up"] :
+      process.argv[2] === "tiktok" ? ["reddit", "tts", "video", "image", "lamtik", "uptik"] :
+      process.argv[2] === "tiktoklocal" ? ["reddit", "tts", "video", "image", "remtik", "uptik"] :
+        process.argv[2].split(",")
 
 export default async function main() {
   const programs = getProgram()
@@ -23,8 +23,8 @@ export default async function main() {
   for (let i = 3; i < process.argv.length; i++) {
     const props = process.argv[i].split(",")
     const folder = props[0]
-    const video = props[1]
-    const image = props[2]
+    const video = props[2]
+    const image = props[1]
     console.log(folder, video, image)
 
     for (const program of programs) {

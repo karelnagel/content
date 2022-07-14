@@ -77,7 +77,7 @@ export const polly = async (folder: string, text: string) => {
     VoiceId: "Matthew",
     SampleRate: "22050",
     OutputS3KeyPrefix: prefix,
-    // Engine: "neural"
+    Engine: "neural"
   };
   try {
     const data = await pollyClient.send(

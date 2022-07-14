@@ -26,7 +26,8 @@ export const post = async (folder: string, tiktok = false) => {
     youTubeOptions: {
       title,
       youTubeVisibility: "public",
-      thumbNail, shorts: tiktok },
+      thumbNail, shorts: tiktok
+    },
     instagramOptions: {
       reels: tiktok,
       shareReelsFeed: tiktok
@@ -43,7 +44,7 @@ export const post = async (folder: string, tiktok = false) => {
     const urls = result.data.postIds?.map((post: any) => post.postUrl)
     console.log(urls)
     return urls
-  } catch (e) {
-    console.log(JSON.stringify(e, null, 2))
+  } catch (e: any) {
+    console.log(`Axios error with code ${e.response.status} ${e.response.data}`)
   }
 };

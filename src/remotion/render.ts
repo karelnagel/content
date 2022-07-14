@@ -5,6 +5,8 @@ import { config } from "../config.js";
 import { readJson, writeJson } from "../file/index.js";
 // import { uploadToBucket } from "../upload/index.js";
 import { Script } from "../interfaces/index.js";
+import AWS from 'aws-sdk'
+import fs from 'fs/promises'
 
 export const createBundle = async () => await bundle(path.resolve("./src/remotion/index"), undefined,
   {
@@ -87,7 +89,7 @@ export const render = async (folder: string, tiktok = false) => {
   if (!composition)
     throw new Error(`No thumbnail composition found.`);
 
-  const outputLocation = `./${config.folderPath}/${folder}/${tiktokFolder(tiktok)}/${config.video}`;
+  const outputLocation = `${config.folderPath}/${folder}/${tiktokFolder(tiktok)}/${config.video}`;
   console.log("Attempting to render:", outputLocation);
   let frames = 1;
   await renderMedia({
@@ -102,7 +104,7 @@ export const render = async (folder: string, tiktok = false) => {
   console.log("Render done!");
 
   // const url = await uploadToBucket(`${folder}/${tiktokFolder(tiktok)}`, config.video);
-  const url = "change url to aws"
+  const url = await uploadToAWS(outputLocation)
 
   const newJson: Script = tiktok ?
     { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, url: url } } :
@@ -111,3 +113,13 @@ export const render = async (folder: string, tiktok = false) => {
   return url
 };
 
+const s3 = new AWS.S3()
+export const uploadToAWS = async (outputLocation: string) => {
+  const file = await fs.readFile(outputLocation)
+  const result = await s3.upload({
+    Bucket: process.env.LAMBDA_BUCKET ?? "",
+    Key: outputLocation,
+    Body: file,
+  }).promise()
+  return result.Location
+}
