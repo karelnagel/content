@@ -22,7 +22,7 @@ export const lambdaThumbnail = async (folder: string, tiktok = false) => {
     maxRetries: 1,
     privacy: "public",
     envVariables: {},
-    // outName: { key: `${config.folderPath}/${folder}/${tiktokFolder(tiktok)}/video.mp4`, bucketName: process.env.LAMBDA_BUCKET ?? "" }
+    outName: { key: `${config.folderPath}/${folder}/${tiktokFolder(tiktok)}/video.mp4`, bucketName: process.env.LAMBDA_BUCKET ?? "" }
 
   });
   const newJson: Script = tiktok ?

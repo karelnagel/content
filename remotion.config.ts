@@ -3,31 +3,38 @@ import { Config } from 'remotion'
 Config.Rendering.setImageFormat('jpeg')
 Config.Output.setOverwriteOutput(true)
 
-Config.Bundling.overrideWebpackConfig(currentConfiguration => {
+Config.Bundling.overrideWebpackConfig((currentConfiguration) => {
   return {
     ...currentConfiguration,
     module: {
       ...currentConfiguration.module,
       rules: [
-        ...(currentConfiguration.module?.rules ? currentConfiguration.module.rules : []).filter(rule => {
-          if (rule === '...') {
-            return false
+        ...(currentConfiguration.module?.rules
+          ? currentConfiguration.module.rules
+          : []
+        ).filter((rule) => {
+          if (rule === "...") {
+            return false;
           }
-          if (rule.test?.toString().includes('.css')) {
-            return false
+          if (rule.test?.toString().includes(".css")) {
+            return false;
           }
-          return true
+          return true;
         }),
         {
           test: /\.css$/i,
           use: [
-            'style-loader',
-            'css-loader',
+            "style-loader",
+            "css-loader",
             {
-              loader: 'postcss-loader',
+              loader: "postcss-loader",
               options: {
                 postcssOptions: {
-                  plugins: ['postcss-preset-env', 'tailwindcss', 'autoprefixer'],
+                  plugins: [
+                    "postcss-preset-env",
+                    "tailwindcss",
+                    "autoprefixer",
+                  ],
                 },
               },
             },
@@ -35,5 +42,5 @@ Config.Bundling.overrideWebpackConfig(currentConfiguration => {
         },
       ],
     },
-  }
-})
+  };
+});

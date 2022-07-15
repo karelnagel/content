@@ -21,7 +21,7 @@ export const getDurations = (scenes: Scene[], tiktok = false): Scene[] => {
         let postId = post.id
         post.replies.forEach(reply => {
           const score = findLowestScore(reply)
-          if (score.lowestScore < lowestScore) {
+          if (score.lowestScore <= lowestScore) {
             lowestScore = score.lowestScore
             postId = score.postId
           }
