@@ -45,6 +45,6 @@ export const post = async (folder: string, tiktok = false) => {
     console.log(urls)
     return urls
   } catch (e: any) {
-    console.log(`Axios error with code ${e.response.status} ${e.response.data}`)
+    console.log(`Axios error with code ${e.response.status}`,e.response.data)
   }
 };
