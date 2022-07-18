@@ -2,7 +2,7 @@ import path from "path";
 import { bundle } from "@remotion/bundler";
 import { getCompositions, renderMedia, renderStill } from "@remotion/renderer";
 import { config } from "../config.js";
-import { readJson, writeJson } from "../file/index.js";
+import { getScript, postScript } from "../file/index.js";
 // import { uploadToBucket } from "../upload/index.js";
 import { Script } from "../interfaces/index.js";
 import AWS from 'aws-sdk'
@@ -58,7 +58,8 @@ export const tiktokFolder = (tiktok = false) => tiktok ? "tiktok" : "youtube"
 export const renderThumbnail = async (folder: string, tiktok = false) => {
   console.log("Starting render");
   const serveUrl = await createBundle()
-  const inputProps = await readJson(folder)
+  const inputProps = await getScript(folder)
+  if (!inputProps) return
   const comps = await getCompositions(serveUrl, {
     inputProps: { ...inputProps, tiktok },
   });
@@ -66,7 +67,7 @@ export const renderThumbnail = async (folder: string, tiktok = false) => {
   if (!composition)
     throw new Error(`No thumbnail composition found.`);
 
-  const output = `./${config.folderPath}/${folder}/${tiktokFolder(tiktok)}/${config.thumbnail}`;
+  const output = `${config.table}/${folder}/${tiktokFolder(tiktok)}/${config.thumbnail}`;
   console.log("Attempting to render:", output);
   await renderStill({
     composition,
@@ -75,12 +76,11 @@ export const renderThumbnail = async (folder: string, tiktok = false) => {
     inputProps,
   });
   console.log("Thumbnail rendered:", output);
-  const url = "change to aws s3"
-  // const url = await uploadToBucket(`${folder}/${tiktokFolder(tiktok)}`, config.thumbnail);
+  const url = await uploadToAWS(output)
   const newJson: Script = tiktok ?
     { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, thumbnail: url } } :
     { ...inputProps, youtubeUpload: { ...inputProps.youtubeUpload, thumbnail: url } }
-  await writeJson(newJson, folder)
+  await postScript(newJson)
   return url
 };
 
@@ -88,15 +88,16 @@ export const renderThumbnail = async (folder: string, tiktok = false) => {
 export const render = async (folder: string, tiktok = false) => {
   console.log("Starting render");
   const serveUrl = await createBundle()
-  const inputProps = await readJson(folder)
+  const inputProps = await getScript(folder)
+  console.log(inputProps)
+  if (!inputProps) return
   const comps = await getCompositions(serveUrl, {
     inputProps: { ...inputProps, tiktok },
   });
   const composition = comps.find((c) => c.id === config.remotion.composition);
   if (!composition)
     throw new Error(`No thumbnail composition found.`);
-
-  const outputLocation = `${config.folderPath}/${folder}/${tiktokFolder(tiktok)}/${config.video}`;
+  const outputLocation = `${config.table}/${folder}/${tiktokFolder(tiktok)}/${config.video}`;
   console.log("Attempting to render:", outputLocation);
   let frames = 1;
   await renderMedia({
@@ -114,9 +115,9 @@ export const render = async (folder: string, tiktok = false) => {
   const url = await uploadToAWS(outputLocation)
 
   const newJson: Script = tiktok ?
-    { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, url: url } } :
-    { ...inputProps, youtubeUpload: { ...inputProps.youtubeUpload, url: url } }
-  await writeJson(newJson, folder)
+    { ...inputProps, tiktokUpload: { ...inputProps?.tiktokUpload, url: url } } :
+    { ...inputProps, youtubeUpload: { ...inputProps?.youtubeUpload, url: url } }
+  await postScript(newJson)
   return url
 };
 

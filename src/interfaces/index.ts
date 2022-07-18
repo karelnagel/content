@@ -7,7 +7,7 @@ export interface Scene {
 export interface Script {
   tiktok?: boolean
   title: string
-  folder: string
+  id: string
   video?: {id:string, url: string, duration: number }
   image?: {id:string, url: string }
   scenes: Scene[]

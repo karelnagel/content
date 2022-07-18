@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { config } from '../config.js'
-import { writeJson } from '../file/index.js'
+import { postScript } from '../file/index.js'
 import { Post, Script } from '../interfaces'
 import { getVideoDurationInSeconds } from 'get-video-duration'
 
@@ -62,11 +62,11 @@ export default async function reddit(folder: string) {
     return
   }
   const script: Script = {
-    folder,
+    id: folder,
     title: `${thread.title?.text} (r/${thread.subreddit?.name})`,
-    scenes: [{ type: "reddit", reddit: thread }, { type: "outro" }]
+    scenes: [{ type: "reddit", reddit: thread }]
   }
-  await writeJson(script, folder)
+  await postScript(script)
   console.log("Reddit finished!")
   return folder
 }

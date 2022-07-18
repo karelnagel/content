@@ -1,5 +1,5 @@
 export const config = {
-  folderPath: 'videos',
+  table: 'videos',
   video: "video.mp4",
   thumbnail: "thumbnail.png",
   bucketName: "content_bucket32",
@@ -9,7 +9,6 @@ export const config = {
     depth: 4,
     sort: 'top',
     posts: 1,
-    json: "script.json"
   },
   remotion: {
     composition: "Video",

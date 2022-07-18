@@ -1,17 +1,17 @@
 import { downloadMedia, getRenderProgress, renderMediaOnLambda, renderStillOnLambda } from "@remotion/lambda"
 import { Script } from "../interfaces/index.js";
 import { config } from "../config.js";
-import { readJson, writeJson } from "../file/index.js";
+import { getScript, postScript } from "../file/index.js";
 import { tiktokFolder } from "./render.js";
 
 const serveUrl = process.env.LAMBDA_SERVE_URL ?? ""
 const functionName = process.env.LAMBDA_FUNCTION_NAME ?? ""
-const region = process.env.LAMBDA_REGION === "us-east-1" ? "us-east-1" : "us-east-2"
+const region = process.env.AWS_REGION === "us-east-1" ? "us-east-1" : "us-east-2"
 const bucketName = process.env.LAMBDA_BUCKET ?? ""
 
 export const lambdaThumbnail = async (folder: string, tiktok = false) => {
-  const inputProps = await readJson(folder)
-
+  const inputProps = await getScript(folder)
+  if (!inputProps) return
   const { url } = await renderStillOnLambda({
     region,
     functionName,
@@ -22,19 +22,20 @@ export const lambdaThumbnail = async (folder: string, tiktok = false) => {
     maxRetries: 1,
     privacy: "public",
     envVariables: {},
-    outName: { key: `${config.folderPath}/${folder}/${tiktokFolder(tiktok)}/video.mp4`, bucketName: process.env.LAMBDA_BUCKET ?? "" }
+    outName: { key: `${config.table}/${folder}/${tiktokFolder(tiktok)}/video.mp4`, bucketName: process.env.LAMBDA_BUCKET ?? "" }
 
   });
   const newJson: Script = tiktok ?
     { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, thumbnail: url } } :
     { ...inputProps, youtubeUpload: { ...inputProps.youtubeUpload, thumbnail: url } }
   console.log(`Thumbnail: ${url}`)
-  await writeJson(newJson, folder)
+  await postScript(newJson)
 };
 
 
 export const lambda = async (folder: string, tiktok = false) => {
-  const inputProps = await readJson(folder)
+  const inputProps = await getScript(folder)
+  if (!inputProps) return
   const { renderId } = await renderMediaOnLambda({
     region,
     functionName,
@@ -45,7 +46,7 @@ export const lambda = async (folder: string, tiktok = false) => {
     imageFormat: "jpeg",
     maxRetries: 1,
     privacy: "public",
-    outName: { key: `${config.folderPath}/${folder}/${tiktokFolder(tiktok)}/video.mp4`, bucketName }
+    outName: { key: `${config.table}/${folder}/${tiktokFolder(tiktok)}/video.mp4`, bucketName }
 
   });
   const getProgress = async () => await getRenderProgress({
@@ -70,7 +71,7 @@ export const lambda = async (folder: string, tiktok = false) => {
     const newJson: Script = tiktok ?
       { ...inputProps, tiktokUpload: { ...inputProps.tiktokUpload, url: progress.outputFile ?? undefined } } :
       { ...inputProps, youtubeUpload: { ...inputProps.youtubeUpload, url: progress.outputFile ?? undefined } }
-    await writeJson(newJson, folder)
+    await postScript(newJson)
     // if (tiktok) await download(folder, renderId)
     console.log(`\nFinished rendering with ${progress.costs.displayCost}`)
   }

@@ -12,7 +12,7 @@ export const getParams = () => process.argv[3]
 export const getProgram = () => process.argv[2] === "all" ? ["reddit", "tts", "video", "image", "lamthumb", "lam", "up", "lamtik", "uptik"] :
   process.argv[2] === "prepare" ? ["reddit", "tts", "video", "image"] :
     process.argv[2] === "youtube" ? ["thumb", "rem", "up"] :
-      process.argv[2] === "tiktok" ? ["reddit", "tts", "video", "image", "lamtik", "uptik"] :
+      process.argv[2] === "tiktok" ? ["reddit", "tts", "video", "image", "remtik", "uptik"] :
       process.argv[2] === "tiktoklocal" ? ["reddit", "tts", "video", "image", "remtik", "uptik"] :
         process.argv[2].split(",")
 

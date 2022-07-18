@@ -1,17 +1,17 @@
 import { PollyClient, StartSpeechSynthesisTaskCommand, StartSpeechSynthesisTaskCommandInput } from "@aws-sdk/client-polly";
-import { readJson, writeJson } from "../file/index.js";
+import { getScript, postScript } from "../file/index.js";
 import { Post, Scene } from "../interfaces/index.js";
 import { config } from "../config.js";
 
 import { getAudioDurationInSeconds } from 'get-audio-duration'
 
-const region = process.env.LAMBDA_REGION;
-const pollyClient = new PollyClient({ region });
+const pollyClient = new PollyClient({});
 
 
 export async function startToSpeech(folder: string) {
-  const script = await readJson(folder)
+  const script = await getScript(folder)
   const scenes: Scene[] = []
+  if (!script) return
   for (const scene of script.scenes) {
     if (!scene.reddit) scenes.push(scene)
     else scenes.push({ ...scene, reddit: await RedditToSpeech(scene.reddit, folder) })
@@ -23,7 +23,7 @@ export async function startToSpeech(folder: string) {
     else scenesWithDurations.push({ ...scene, reddit: await getPostDurations(scene.reddit, folder) })
   }
 
-  await writeJson({ ...script, scenes: scenesWithDurations }, folder)
+  await postScript({ ...script, scenes: scenesWithDurations })
 }
 
 export async function RedditToSpeech(post: Post, folder: string) {
@@ -46,7 +46,7 @@ export async function getDuration(text: string) {
       duration = await getAudioDurationInSeconds(text)
     }
     catch (e) {
-      console.log(e)
+      // console.log(e)
       await new Promise(resolve => setTimeout(resolve, 5000))
     }
   }
@@ -68,7 +68,7 @@ export async function getPostDurations(post: Post, folder: string) {
 
 export const polly = async (folder: string, text: string) => {
   const bucket = process.env.LAMBDA_BUCKET
-  const prefix = `${config.folderPath}/${folder}/audio/audio`
+  const prefix = `${config.table}/${folder}/audio/audio`
 
   const params: StartSpeechSynthesisTaskCommandInput = {
     OutputFormat: "mp3",

@@ -11,7 +11,7 @@ export const getDurations = (scenes: Scene[], tiktok = false): Scene[] => {
     }
     else if (scene.type === 'outro')
       return { ...scene, duration: config.remotion.outroDuration }
-    else return scene
+    else return { ...scene, duration: 1 }
   })
   if (tiktok) {
     // remove the posts with lowest score to fit into the tiktok duration
@@ -44,6 +44,7 @@ export const getDurations = (scenes: Scene[], tiktok = false): Scene[] => {
     }
     let duration = newScenes.reduce((acc, scene) => (acc + (scene.duration ?? 0)), 0)
     while (duration > config.remotion.tiktokDuration) {
+      console.log(duration)
       newScenes = newScenes.map(scene => {
         if (scene.type !== 'reddit' || !scene.reddit) return scene
         const lowestPostId = findLowestScore(scene.reddit).postId

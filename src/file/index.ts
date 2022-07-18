@@ -1,24 +1,49 @@
-import fs from 'fs/promises'
-import { config } from './../config.js'
 import { Post, Script } from './../interfaces'
+import { DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 
-export async function writeJson(object: Script, folder: string, file = config.reddit.json): Promise<string> {
-  const fileName = `./${config.folderPath}/${folder}/${file}`
-  await makeDirectory(`./${config.folderPath}/${folder}`)
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { config } from '../config.js';
 
-  await fs.writeFile(fileName, JSON.stringify(object, null, 2),)
-  return fileName
+const tableName = config.table
+
+const ddbClient = new DynamoDBClient({});
+const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, { marshallOptions: { removeUndefinedValues: true } });
+
+export async function postScript(script: Script): Promise<string | null> {
+  try {
+    const params = {
+      TableName: tableName,
+      Item: {
+        ...script
+      },
+    };
+    await ddbDocClient.send(new PutCommand(params));
+    return script.id;
+  } catch (err) {
+    console.log("Error", err);
+    return null
+  }
 }
 
-export async function makeDirectory(folder: string) {
-  await fs.mkdir(folder, { recursive: true })
-}
-export const readJson = async (folder: string, file = config.reddit.json): Promise<Script> => {
-  return JSON.parse(await fs.readFile(`./${config.folderPath}/${folder}/${file}`, "utf8"))
+export const getScript = async (id: string): Promise<Script | null> => {
+  try {
+    const params = {
+      TableName: tableName,
+      Key: {
+        id: id,
+      },
+    };
+    const data = await ddbDocClient.send(new GetCommand(params));
+    return data.Item as Script
+  }
+  catch (e) {
+    console.log("Error", e);
+    return null
+  }
 }
 
 
- const getPostDuration = (post: Post, recursive = true): number => {
+const getPostDuration = (post: Post, recursive = true): number => {
   let length = 0
   if (post.title?.duration) {
     length += post.title.duration
@@ -35,8 +60,10 @@ export const readJson = async (folder: string, file = config.reddit.json): Promi
     }
   return length
 }
+
 export const getLength = async (folder: string) => {
-  const json = await readJson(folder)
+  const json = await getScript(folder)
+  if (!json) return
   const length = json.scenes[0].reddit ? getPostDuration(json.scenes[0].reddit) : 0
   console.log(`${folder} length: ${length}`)
 }

@@ -1,5 +1,5 @@
 import axios from "axios"
-import { readJson } from "../file/index.js";
+import { getScript } from "../file/index.js";
 
 const API_KEY = process.env.AYRSHARE; // get an API Key at ayrshare.com
 const headers = {
@@ -8,7 +8,8 @@ const headers = {
 }
 
 export const post = async (folder: string, tiktok = false) => {
-  const json = await readJson(folder)
+  const json = await getScript(folder)
+  if (!json) return
 
   const platforms = tiktok ? ["tiktok", "instagram", "youtube"] : ["youtube"]
   const med = tiktok ? json.tiktokUpload?.url : json.youtubeUpload?.url
