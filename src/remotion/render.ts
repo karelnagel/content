@@ -89,7 +89,6 @@ export const render = async (folder: string, tiktok = false) => {
   console.log("Starting render");
   const serveUrl = await createBundle()
   const inputProps = await getScript(folder)
-  console.log(inputProps)
   if (!inputProps) return
   const comps = await getCompositions(serveUrl, {
     inputProps: { ...inputProps, tiktok },

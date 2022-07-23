@@ -63,7 +63,7 @@ export default async function reddit(folder: string) {
   }
   const script: Script = {
     id: folder,
-    title: `${thread.title?.text} (r/${thread.subreddit?.name})`,
+    title: `${thread.title?.text} (r/${thread.subreddit?.name}) #reddit #redditstories #${thread.subreddit?.name}`,
     scenes: [{ type: "reddit", reddit: thread }]
   }
   await postScript(script)
