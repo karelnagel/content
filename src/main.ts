@@ -14,13 +14,13 @@ export const getProgram = () => process.argv[2] === "all" ? ["reddit", "tts", "v
   process.argv[2] === "prepare" ? ["reddit", "tts", "video", "image"] :
     process.argv[2] === "youtube" ? ["thumb", "rem", "up"] :
       process.argv[2] === "tiktok" ? ["reddit", "tts", "video", "image", "remtik", "uptik"] :
-        process.argv[2] === "tiktoklocal" ? ["reddit", "tts", "video", "image", "remtik", "uptik"] :
+        process.argv[2] === "tiktoklam" ? ["reddit", "tts", "video", "image", "lamtik", "uptik"] :
           process.argv[2].split(",")
 
 export default async function main() {
   const programs = getProgram()
   console.log(`Starting ${programs} `)
-  if (programs.includes("ec2")) ec2Start()
+  // if (programs.includes("ec2")) ec2Start()
   for (let i = 3; i < process.argv.length; i++) {
     const props = process.argv[i].split(",")
     const folder = props[0]
@@ -86,7 +86,7 @@ export default async function main() {
           console.log(`${program} is not a valid program`)
       }
     }
-    if (programs.includes("ec2")) ec2Stop()
+    // if (programs.includes("ec2")) ec2Stop()
     console.log(`Finished ${folder}`)
   }
 }

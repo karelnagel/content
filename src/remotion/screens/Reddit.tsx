@@ -66,7 +66,9 @@ export const RedditPost: React.FC<{ post: Post }> = ({ post }) => {
           {post.media && (
             <div className="h-96" style={{ height: '45rem' }}>
               {post.media?.type === 'image' && <Img src={post.media.src} className="object-contain h-full " />}
-              {post.media?.type === 'gif' && <Gif src={post.media.src} fit="contain" style={{ height: '100%' }} />}
+              {post.media?.type === 'gif' && (
+                <Gif src={post.media.src} fit="contain" style={{ height: '100%', width: '100%' }} />
+              )}
               {post.media?.type?.includes('video') && (
                 <Series>
                   <Series.Sequence durationInFrames={secondsToFrames(post.title?.duration)} layout="none">
