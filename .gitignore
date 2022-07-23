@@ -120,3 +120,4 @@ videos/
 out/
 google-key.json
 src/remotion/.DS_Store
+*.cer
