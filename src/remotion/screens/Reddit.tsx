@@ -5,8 +5,8 @@ import { getPostDuration } from '../audio'
 import { secondsToFrames } from '../Root'
 import { ImArrowUp, ImArrowDown } from 'react-icons/im'
 import { Gif } from '@remotion/gif'
-import Background from './../images/background.mp4'
-
+// import Background from './../images/background.mp4'
+const Background = "https://remotionlambda-24lixyhuqn.s3.us-east-1.amazonaws.com/background.mp4"
 const backgroundLength = 500
 const defaultImage =
   'https://external-preview.redd.it/_o7PutALILIg2poC9ed67vHQ68Cxx67UT6q7CFAhCs4.png?auto=webp&s=2560c01cc455c9dcbad0d869116c938060e43212'
