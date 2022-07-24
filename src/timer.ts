@@ -12,7 +12,7 @@ async function timer() {
       await oneThread(["reddit", "tts", "remtik", "uptik"], queue[0])
       await postQueue(queue.slice(1))
     }
-    else console.log("Queue is empty")
+    // else console.log("Queue is empty")
     await new Promise(resolve => setTimeout(resolve, 10000))
   }
 }
