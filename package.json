@@ -5,6 +5,7 @@
   "types": "dist/main.d.ts",
   "scripts": {
     "start": "node --loader ts-node/esm ./src/main.ts ${program} ${file}",
+    "timer": "node --loader ts-node/esm ./src/timer.ts",
     "lint": "eslint --ext .ts,.js .",
     "format": "prettier \"./**\" --write --ignore-unknown",
     "format:check": "prettier \"./**\" --ignore-unknown --check",

@@ -41,6 +41,39 @@ export const getScript = async (id: string): Promise<Script | null> => {
     return null
   }
 }
+export const getQueue = async (): Promise<string[] | null> => {
+  try {
+    const params = {
+      TableName: "queue",
+      Key: {
+        id: "queue",
+      },
+    };
+    const data = await ddbDocClient.send(new GetCommand(params));
+    return data.Item?.queue as string[]
+  }
+  catch (e) {
+    console.log("Error", e);
+    return null
+  }
+}
+
+export async function postQueue(queue: string[]): Promise<string[] | null> {
+  try {
+    const params = {
+      TableName: "queue",
+      Item: {
+        id: "queue",
+        queue: queue
+      },
+    };
+    await ddbDocClient.send(new PutCommand(params));
+    return queue;
+  } catch (err) {
+    console.log("Error", err);
+    return null
+  }
+}
 
 
 const getPostDuration = (post: Post, recursive = true): number => {
