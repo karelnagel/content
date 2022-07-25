@@ -8,8 +8,8 @@ export interface Script {
   tiktok?: boolean
   title: string
   id: string
-  video?: {id:string, url: string, duration: number }
-  image?: {id:string, url: string }
+  video?: { id: string, url: string, duration: number }
+  image?: { id: string, url: string }
   scenes: Scene[]
   youtubeUpload?: Upload,
   tiktokUpload?: Upload
@@ -38,8 +38,9 @@ export interface Post {
   score?: number,
   media?: {
     src: string,
-    type?: 'video' | 'videoNoAudio' | 'image' | 'gif',
-    duration: number
+    type?: 'video' | 'image' | 'gif',
+    duration: number,
+    audio?: string
   }
 }
 export interface Text {

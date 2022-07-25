@@ -3,6 +3,7 @@ import { config } from '../config.js'
 import { postScript } from '../file/index.js'
 import { Post, Script } from '../interfaces'
 import { getVideoDurationInSeconds } from 'get-video-duration'
+import getAudioDurationInSeconds from 'get-audio-duration'
 
 type Sort = "top" | "controversial" | "confidence"
 
@@ -19,13 +20,15 @@ export async function getThread(threadId: string, depth?: number, limit?: number
     const hint = jsonPost.post_hint
     const mediaUrl = jsonPost.media?.reddit_video?.fallback_url || jsonPost.url_overridden_by_dest
 
-    const mediaType: "video" | "videoNoAudio" | "image" | "gif" | undefined =
-      hint?.includes("video") ?
-        jsonPost.media?.reddit_video?.is_gif ? 'videoNoAudio' : 'video' :
+    const mediaType: "video" | "image" | "gif" | undefined =
+      hint?.includes("video") ? 'video' :
         hint?.includes("image") ? mediaUrl.includes(".gif") ? "gif" : "image" : undefined
 
+    let mediaAudio = mediaType === "video" ? `${mediaUrl.split('DASH')[0]}DASH_audio.mp4` : undefined
+    if (mediaAudio) try { await getAudioDurationInSeconds(mediaAudio) } catch (e) { mediaAudio = undefined }
     const media = mediaUrl && mediaType ? {
       src: mediaUrl,
+      audio: mediaAudio,
       type: mediaType,
       duration: mediaType.includes("video") ? await getVideoDurationInSeconds(mediaUrl) : 3
     } : undefined
@@ -84,7 +87,9 @@ export async function getRedditImage(name: string, subreddit = false) {
 export function removeLinks(str: string) {
   if (!str) return str
   const tags = str.match(/\[.*?(?=\]\((.*?)\))/g)?.map(x => x.substring(1)) ?? [];
-  const newString = str.replace(/\[.*?\]\(.*?\)/g, () => tags.shift() ?? "");
+  const newString = str.replace(/\[.*?\]\(.*?\)/g, () => tags.shift() ?? "")
+    .replace(/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi, "")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 
   return newString
 }
