@@ -3,7 +3,6 @@ import { config } from '../config.js'
 import { postScript } from '../file/index.js'
 import { Post, Script } from '../interfaces'
 import { getVideoDurationInSeconds } from 'get-video-duration'
-import getAudioDurationInSeconds from 'get-audio-duration'
 
 type Sort = "top" | "controversial" | "confidence"
 
@@ -25,7 +24,7 @@ export async function getThread(threadId: string, depth?: number, limit?: number
         hint?.includes("image") ? mediaUrl.includes(".gif") ? "gif" : "image" : undefined
 
     let mediaAudio = mediaType === "video" ? `${mediaUrl.split('DASH')[0]}DASH_audio.mp4` : undefined
-    if (mediaAudio) try { await getAudioDurationInSeconds(mediaAudio) } catch (e) { mediaAudio = undefined }
+    if (mediaAudio) try { await getVideoDurationInSeconds(mediaAudio) } catch (e) { mediaAudio = undefined }
     const media = mediaUrl && mediaType ? {
       src: mediaUrl,
       audio: mediaAudio,
