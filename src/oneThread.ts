@@ -34,7 +34,11 @@ export async function oneThread(programs: string[], folder: string, video?: stri
         await render(folder)
         break;
       case "remtik":
-        await render(folder, true)
+        try {
+          await render(folder, true)
+        } catch {
+          await render(folder, true)
+        }
         break;
       case "ec2":
         await ec(folder, false)
